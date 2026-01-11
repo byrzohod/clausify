@@ -1,52 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-
-// Rate limiting store (in-memory - use Redis in production for multi-instance)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-// Rate limit configuration per endpoint pattern
-const rateLimitConfig: Record<string, { windowMs: number; max: number }> = {
-  '/api/auth/signup': { windowMs: 60 * 60 * 1000, max: 5 }, // 5 signups per hour per IP
-  '/api/contracts/upload': { windowMs: 60 * 1000, max: 10 }, // 10 uploads per minute per user
-  '/api/analyze': { windowMs: 60 * 1000, max: 5 }, // 5 analyses per minute per user
-  '/api/demo': { windowMs: 60 * 60 * 1000, max: 2 }, // 2 demos per hour per IP
-  '/api/billing': { windowMs: 60 * 1000, max: 10 }, // 10 billing requests per minute
-  'default': { windowMs: 60 * 1000, max: 100 }, // 100 requests per minute default
-};
-
-function getRateLimitKey(request: NextRequest, userId?: string): string {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
-             request.headers.get('x-real-ip') ||
-             'unknown';
-  return userId ? `user:${userId}` : `ip:${ip}`;
-}
-
-function getRateLimitConfig(pathname: string): { windowMs: number; max: number } {
-  for (const [pattern, config] of Object.entries(rateLimitConfig)) {
-    if (pattern !== 'default' && pathname.startsWith(pattern)) {
-      return config;
-    }
-  }
-  return rateLimitConfig.default;
-}
-
-function checkRateLimit(key: string, config: { windowMs: number; max: number }): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now();
-  const record = rateLimitStore.get(key);
-
-  if (!record || now > record.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + config.windowMs });
-    return { allowed: true, remaining: config.max - 1, resetIn: config.windowMs };
-  }
-
-  if (record.count >= config.max) {
-    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
-  }
-
-  record.count++;
-  return { allowed: true, remaining: config.max - record.count, resetIn: record.resetTime - now };
-}
+import {
+  checkRateLimit,
+  getRateLimitConfig,
+  getRateLimitKey,
+} from '@/lib/rate-limit';
 
 // Security headers
 const securityHeaders = {
@@ -73,6 +32,14 @@ const cspDirectives = [
   "frame-ancestors 'none'",
 ];
 
+function getClientIp(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0] ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -96,15 +63,16 @@ export async function middleware(request: NextRequest) {
 
   // Apply rate limiting for API routes
   if (pathname.startsWith('/api')) {
-    const rateLimitKey = getRateLimitKey(request, userId);
+    const ip = getClientIp(request);
+    const rateLimitKey = getRateLimitKey(pathname, ip, userId);
     const config = getRateLimitConfig(pathname);
-    const { allowed, remaining, resetIn } = checkRateLimit(rateLimitKey, config);
+    const { allowed, remaining, resetIn } = await checkRateLimit(rateLimitKey, config);
 
     if (!allowed) {
       return new NextResponse(
         JSON.stringify({
           error: 'Too many requests. Please try again later.',
-          retryAfter: Math.ceil(resetIn / 1000)
+          retryAfter: Math.ceil(resetIn / 1000),
         }),
         {
           status: 429,
@@ -114,7 +82,7 @@ export async function middleware(request: NextRequest) {
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': String(Math.ceil(resetIn / 1000)),
             ...securityHeaders,
-          }
+          },
         }
       );
     }
