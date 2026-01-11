@@ -119,8 +119,8 @@ Key tasks:
 | 3. Comparison UI | 1/1 | Complete | 2026-01-11 |
 | 4. Diff Engine | 1/1 | Complete | 2026-01-11 |
 | 5. Template Matching | 1/1 | Complete | 2026-01-11 |
-| 6. Comparative Analysis | 0/TBD | Not started | - |
-| 7. Webhook Reliability | 0/TBD | Not started | - |
+| 6. Comparative Analysis | 1/1 | Complete | 2026-01-11 |
+| 7. Webhook Reliability | 1/1 | Complete | 2026-01-11 |
 
 ---
 *Roadmap created: 2026-01-11*
