@@ -32,12 +32,10 @@ None (standard Next.js/TypeScript patterns)
 **Goal**: Clean up security issues and add observability
 **Depends on**: Nothing (first phase)
 **Research**: Unlikely (straightforward cleanup)
-**Plans**: TBD
+**Plans**: 1 plan
 
-Key tasks:
-- Remove 47 debug console.logs from auth callbacks (security risk)
-- Add /health endpoint for Railway container orchestration
-- Review and document allowDangerousEmailAccountLinking setting
+Plans:
+- [ ] 01-01: Auth logging cleanup + health endpoint
 
 ### Phase 2: Redis Rate Limiting
 **Goal**: Production-ready rate limiting that works with multiple instances
@@ -114,7 +112,7 @@ Key tasks:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation Fixes | 0/TBD | Not started | - |
+| 1. Foundation Fixes | 0/1 | In progress | - |
 | 2. Redis Rate Limiting | 0/TBD | Not started | - |
 | 3. Comparison UI | 0/TBD | Not started | - |
 | 4. Diff Engine | 0/TBD | Not started | - |
