@@ -42,7 +42,25 @@ export function FileUpload({
 
       if (fileRejections.length > 0) {
         const rejection = fileRejections[0];
-        const errorMessage = rejection.errors[0]?.message || 'File rejected';
+        const errorCode = rejection.errors[0]?.code;
+
+        // Map error codes to user-friendly messages
+        let errorMessage: string;
+        switch (errorCode) {
+          case 'file-too-large':
+            const sizeMB = (rejection.file.size / 1024 / 1024).toFixed(1);
+            errorMessage = `File is too large (${sizeMB}MB). Maximum size is 10MB. Try compressing the file or removing images.`;
+            break;
+          case 'file-invalid-type':
+            errorMessage = `"${rejection.file.name}" is not a supported file type. Please upload a PDF or DOCX file.`;
+            break;
+          case 'too-many-files':
+            errorMessage = 'Only one file can be uploaded at a time. Please select a single contract.';
+            break;
+          default:
+            errorMessage = rejection.errors[0]?.message || 'File could not be uploaded. Please try again.';
+        }
+
         setError(errorMessage);
         return;
       }

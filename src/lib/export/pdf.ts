@@ -1,10 +1,45 @@
 import { jsPDF } from 'jspdf';
 import type { AnalysisResult } from '@/types';
 
+// Use requestIdleCallback if available, otherwise setTimeout
+const scheduleWork =
+  typeof requestIdleCallback !== 'undefined'
+    ? requestIdleCallback
+    : (cb: () => void) => setTimeout(cb, 1);
+
+/**
+ * Export analysis to PDF with non-blocking behavior.
+ * Uses requestIdleCallback to avoid blocking the main thread.
+ */
 export async function exportAnalysisToPdf(
   analysis: AnalysisResult,
-  fileName: string = 'Contract Analysis'
+  fileName: string = 'Contract Analysis',
+  onProgress?: (progress: number) => void
 ): Promise<Blob> {
+  // Report initial progress
+  onProgress?.(0);
+
+  // Defer heavy work to idle time
+  return new Promise((resolve, reject) => {
+    scheduleWork(() => {
+      try {
+        const blob = generatePdf(analysis, fileName, onProgress);
+        resolve(blob);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
+
+/**
+ * Internal PDF generation function.
+ */
+function generatePdf(
+  analysis: AnalysisResult,
+  fileName: string,
+  onProgress?: (progress: number) => void
+): Blob {
   const doc = new jsPDF();
   let yPos = 20;
   const margin = 20;
@@ -53,6 +88,7 @@ export async function exportAnalysisToPdf(
 
   // Reset text color
   doc.setTextColor(0, 0, 0);
+  onProgress?.(10);
 
   // Contract Info
   addText(`Contract: ${fileName}`, 14, true);
@@ -78,6 +114,7 @@ export async function exportAnalysisToPdf(
 
   // Summary
   addSection('Summary', analysis.summary);
+  onProgress?.(20);
 
   // Red Flags
   if (analysis.redFlags.length > 0) {
@@ -99,6 +136,7 @@ export async function exportAnalysisToPdf(
     });
     yPos += 5;
   }
+  onProgress?.(35);
 
   // Key Terms
   if (analysis.keyTerms.length > 0) {
@@ -112,6 +150,7 @@ export async function exportAnalysisToPdf(
     });
     yPos += 5;
   }
+  onProgress?.(50);
 
   // Obligations
   if (analysis.obligations.length > 0) {
@@ -126,6 +165,7 @@ export async function exportAnalysisToPdf(
     });
     yPos += 5;
   }
+  onProgress?.(65);
 
   // Parties
   if (analysis.parties.length > 0) {
@@ -146,6 +186,7 @@ export async function exportAnalysisToPdf(
     });
     yPos += 5;
   }
+  onProgress?.(75);
 
   // Financial Terms
   if (analysis.amounts.length > 0) {
@@ -159,6 +200,7 @@ export async function exportAnalysisToPdf(
     });
     yPos += 5;
   }
+  onProgress?.(85);
 
   // Disclaimer
   doc.addPage();
@@ -182,6 +224,7 @@ export async function exportAnalysisToPdf(
       doc.internal.pageSize.getHeight() - 10
     );
   }
+  onProgress?.(100);
 
   return doc.output('blob');
 }

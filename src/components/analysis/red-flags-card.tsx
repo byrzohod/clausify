@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -43,22 +44,34 @@ const severityConfig = {
   },
 };
 
-export function RedFlagsCard({ redFlags }: RedFlagsCardProps) {
-  const sortedFlags = [...redFlags].sort((a, b) => {
-    const order = { high: 0, medium: 1, low: 2 };
-    return order[a.severity] - order[b.severity];
-  });
+const severityOrder = { high: 0, medium: 1, low: 2 };
 
-  const highCount = redFlags.filter((f) => f.severity === 'high').length;
-  const mediumCount = redFlags.filter((f) => f.severity === 'medium').length;
+export function RedFlagsCard({ redFlags }: RedFlagsCardProps) {
+  // Memoize sorted flags to prevent re-sorting on every render
+  const sortedFlags = useMemo(
+    () =>
+      [...redFlags].sort(
+        (a, b) => severityOrder[a.severity] - severityOrder[b.severity]
+      ),
+    [redFlags]
+  );
+
+  // Memoize counts to prevent re-filtering on every render
+  const { highCount, mediumCount } = useMemo(
+    () => ({
+      highCount: redFlags.filter((f) => f.severity === 'high').length,
+      mediumCount: redFlags.filter((f) => f.severity === 'medium').length,
+    }),
+    [redFlags]
+  );
 
   return (
-    <Card data-testid="red-flags-card">
+    <Card data-testid="red-flags-card" role="region" aria-label="Red flags and concerns">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+            <CardTitle className="flex items-center gap-2 text-xl" id="red-flags-title">
+              <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
               Red Flags & Concerns
             </CardTitle>
             <CardDescription className="mt-1">

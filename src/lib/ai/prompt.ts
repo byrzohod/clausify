@@ -75,20 +75,38 @@ Please respond with a JSON object containing the following fields:
       "currency": "USD or other currency",
       "frequency": "one-time, monthly, annual, etc."
     }
-  ]
+  ],
+  "negotiationTips": [
+    {
+      "priority": "high/medium/low",
+      "topic": "Brief title of what to negotiate",
+      "currentTerm": "What the contract currently says",
+      "suggestedChange": "What the user should ask for instead",
+      "reasoning": "Why this change would benefit the user",
+      "scriptSuggestion": "Sample language the user could use when negotiating"
+    }
+  ],
+  "expirationDate": "The contract's end date or renewal date if specified (ISO 8601 format, null if not applicable)"
 }
 
 Be thorough and identify ALL significant terms, obligations, and potential concerns. If the contract is missing important provisions (like termination clauses, dispute resolution, etc.), mention that as a red flag.
 
+For negotiation tips, focus on:
+1. One-sided clauses that could be made more balanced
+2. Missing protections the user should request
+3. Unfavorable terms that are commonly negotiable
+4. Industry-standard provisions that are missing
+
 Respond with ONLY the JSON object, no additional text.`;
 
 export function buildAnalysisPrompt(contractText: string): string {
-  // Truncate if too long (Claude has context limits)
-  const maxLength = 100000; // ~100k characters
+  // Truncate if too long to save on API costs (50KB is sufficient for most contracts)
+  const maxLength = 50000; // ~50k characters (~12,500 tokens)
   const truncatedText =
     contractText.length > maxLength
       ? contractText.substring(0, maxLength) +
-        '\n\n[Contract text truncated due to length]'
+        '\n\n[NOTE: Contract text was truncated at 50KB. The analysis covers the content shown above. ' +
+        'For complete analysis of longer documents, consider splitting them into sections.]'
       : contractText;
 
   return ANALYSIS_USER_PROMPT.replace('{CONTRACT_TEXT}', truncatedText);

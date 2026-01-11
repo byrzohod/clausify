@@ -21,10 +21,10 @@ interface SectionsCardProps {
 
 export function SectionsCard({ sections }: SectionsCardProps) {
   return (
-    <Card data-testid="sections-card">
+    <Card data-testid="sections-card" role="region" aria-label="Contract sections explained">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <FileText className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-xl" id="sections-title">
+          <FileText className="h-5 w-5" aria-hidden="true" />
           Contract Sections Explained
         </CardTitle>
         <CardDescription>

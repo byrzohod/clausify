@@ -31,10 +31,10 @@ export function ObligationsCard({ obligations }: ObligationsCardProps) {
   const parties = Object.keys(groupedObligations);
 
   return (
-    <Card data-testid="obligations-card">
+    <Card data-testid="obligations-card" role="region" aria-label="Contract obligations">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <ClipboardList className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-xl" id="obligations-title">
+          <ClipboardList className="h-5 w-5" aria-hidden="true" />
           Obligations & Responsibilities
         </CardTitle>
         <CardDescription>

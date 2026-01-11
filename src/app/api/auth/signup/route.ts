@@ -2,9 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createUser } from '@/lib/auth';
 
+// Password strength validation
+const passwordSchema = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(128, 'Password must be less than 128 characters')
+  .refine(
+    (password) => /[A-Z]/.test(password),
+    'Password must contain at least one uppercase letter'
+  )
+  .refine(
+    (password) => /[a-z]/.test(password),
+    'Password must contain at least one lowercase letter'
+  )
+  .refine(
+    (password) => /[0-9]/.test(password),
+    'Password must contain at least one number'
+  )
+  .refine(
+    (password) => /[^A-Za-z0-9]/.test(password),
+    'Password must contain at least one special character (!@#$%^&*)'
+  );
+
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
   name: z.string().optional(),
 });
 

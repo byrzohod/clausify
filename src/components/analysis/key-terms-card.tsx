@@ -41,10 +41,10 @@ export function KeyTermsCard({ keyTerms }: KeyTermsCardProps) {
   });
 
   return (
-    <Card data-testid="key-terms-card">
+    <Card data-testid="key-terms-card" role="region" aria-label="Key contract terms">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <Key className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-xl" id="key-terms-title">
+          <Key className="h-5 w-5" aria-hidden="true" />
           Key Terms
         </CardTitle>
         <CardDescription>

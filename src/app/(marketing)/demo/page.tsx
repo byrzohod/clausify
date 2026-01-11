@@ -17,9 +17,10 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Loader2, AlertCircle, ArrowRight, Lock } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowRight, Lock, FileText, Eye } from 'lucide-react';
 import Link from 'next/link';
 import type { AnalysisResult } from '@/types';
+import { SAMPLE_NDA_ANALYSIS } from '@/lib/ai/sample-analysis';
 
 export default function DemoPage() {
   const router = useRouter();
@@ -122,50 +123,134 @@ export default function DemoPage() {
     );
   }
 
-  // Not authenticated - show login prompt
+  // Not authenticated - show sample analysis option and login prompt
   if (!session) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1 py-12">
-          <div className="container max-w-xl">
-            <Card>
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <Lock className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-2xl">Sign in to Try Demo</CardTitle>
-                <CardDescription>
-                  Create a free account to analyze up to 2 contracts at no cost.
-                  It only takes a minute!
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-lg bg-muted/50 p-4">
-                  <h4 className="mb-2 font-medium">Free Account Benefits</h4>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li>- 2 free contract analyses</li>
-                    <li>- Save and access your results anytime</li>
-                    <li>- Get plain English summaries</li>
-                    <li>- Identify red flags and risks</li>
-                  </ul>
+          <div className="container max-w-4xl">
+            <div className="mb-8 text-center">
+              <h1 className="mb-4 text-4xl font-bold">See Clausify in Action</h1>
+              <p className="text-lg text-muted-foreground">
+                View a sample analysis to see exactly what you get, or sign up for free to analyze your own contracts.
+              </p>
+            </div>
+
+            {/* Sample Analysis View */}
+            {analysisResult ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4">
+                  <div>
+                    <h3 className="font-medium">Sample NDA Analysis</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This is what your analysis will look like
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setAnalysisResult(null)}
+                  >
+                    Back to Demo
+                  </Button>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                  <Link href="/signup?callbackUrl=/demo" className="w-full">
-                    <Button className="w-full">
-                      Create Free Account
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                <AnalysisResults
+                  analysis={analysisResult}
+                  fileName="Sample NDA Contract.pdf"
+                />
+
+                <Card className="border-primary/50 bg-primary/5">
+                  <CardContent className="flex items-center justify-between py-6">
+                    <div>
+                      <h3 className="font-semibold">Ready to analyze your own contract?</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Sign up free and get 2 contract analyses at no cost.
+                      </p>
+                    </div>
+                    <Link href="/signup?callbackUrl=/demo">
+                      <Button>
+                        Get Started Free
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Sample Analysis Card */}
+                <Card className="border-2 border-primary/50">
+                  <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                      <Eye className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl">View Sample Analysis</CardTitle>
+                    <CardDescription>
+                      See what a full contract analysis looks like before signing up
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="rounded-lg bg-muted/50 p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-medium">Sample NDA Contract</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        A typical Non-Disclosure Agreement with detailed analysis including red flags, key terms, and obligations.
+                      </p>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => setAnalysisResult(SAMPLE_NDA_ANALYSIS)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Sample Analysis
                     </Button>
-                  </Link>
-                  <Link href="/login?callbackUrl=/demo" className="w-full">
-                    <Button variant="outline" className="w-full">
-                      Already have an account? Sign In
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+
+                {/* Sign Up Card */}
+                <Card>
+                  <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                      <Lock className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <CardTitle className="text-xl">Analyze Your Contract</CardTitle>
+                    <CardDescription>
+                      Create a free account to analyze your own contracts
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="rounded-lg bg-muted/50 p-4">
+                      <h4 className="mb-2 font-medium">Free Account Includes</h4>
+                      <ul className="space-y-1 text-sm text-muted-foreground">
+                        <li>- 2 free contract analyses</li>
+                        <li>- Save and access results anytime</li>
+                        <li>- Export to PDF</li>
+                        <li>- No credit card required</li>
+                      </ul>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <Link href="/signup?callbackUrl=/demo" className="w-full">
+                        <Button className="w-full">
+                          Create Free Account
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href="/login?callbackUrl=/demo" className="w-full">
+                        <Button variant="ghost" className="w-full">
+                          Already have an account? Sign In
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </main>
         <Footer />

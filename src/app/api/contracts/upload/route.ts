@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { uploadFile } from '@/lib/storage';
-import { isSupportedType } from '@/lib/parsers';
+import { isSupportedType, validateFileMagicBytes, detectFileType } from '@/lib/parsers';
+import { logContractAudit } from '@/lib/audit';
+import { getCacheHeader } from '@/lib/cache';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type
+    // Validate declared MIME type
     const mimeType = file.type;
     if (!isSupportedType(mimeType)) {
       return NextResponse.json(
@@ -41,6 +43,21 @@ export async function POST(request: NextRequest) {
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // Validate file content matches declared MIME type (prevent MIME spoofing)
+    if (!validateFileMagicBytes(buffer, mimeType)) {
+      const detectedType = detectFileType(buffer);
+      console.warn('[Upload] MIME type mismatch', {
+        declared: mimeType,
+        detected: detectedType,
+        fileName: file.name,
+        userId: session.user.id,
+      });
+      return NextResponse.json(
+        { error: 'File content does not match file type. Please upload a valid PDF or DOCX file.' },
+        { status: 400 }
+      );
+    }
 
     // Upload to Supabase Storage
     const { path, url } = await uploadFile(
@@ -61,6 +78,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Audit log successful upload
+    logContractAudit('contract.upload', {
+      userId: session.user.id,
+      contractId: contract.id,
+      fileName: file.name,
+      success: true,
+      ipAddress: request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
+    });
+
     return NextResponse.json(
       {
         contractId: contract.id,
@@ -68,7 +94,12 @@ export async function POST(request: NextRequest) {
         status: contract.status,
         fileUrl: url,
       },
-      { status: 201 }
+      {
+        status: 201,
+        headers: {
+          'Cache-Control': getCacheHeader('no-store'),
+        },
+      }
     );
   } catch (error) {
     console.error('Upload error:', error);

@@ -1,17 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SummaryCard } from './summary-card';
-import { RedFlagsCard } from './red-flags-card';
-import { ObligationsCard } from './obligations-card';
-import { KeyTermsCard } from './key-terms-card';
-import { SectionsCard } from './sections-card';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { exportAnalysisToPdf, downloadPdf } from '@/lib/export';
 import type { AnalysisResult } from '@/types';
+
+// Lazy load tab content components for better initial page load
+const RedFlagsCard = lazy(() =>
+  import('./red-flags-card').then((mod) => ({ default: mod.RedFlagsCard }))
+);
+const ObligationsCard = lazy(() =>
+  import('./obligations-card').then((mod) => ({ default: mod.ObligationsCard }))
+);
+const KeyTermsCard = lazy(() =>
+  import('./key-terms-card').then((mod) => ({ default: mod.KeyTermsCard }))
+);
+const SectionsCard = lazy(() =>
+  import('./sections-card').then((mod) => ({ default: mod.SectionsCard }))
+);
+
+// Loading skeleton for lazy-loaded tabs
+function TabSkeleton() {
+  return (
+    <div className="space-y-4 p-6" data-testid="tab-skeleton">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-24 w-full" />
+    </div>
+  );
+}
 
 interface AnalysisResultsProps {
   analysis: AnalysisResult;
@@ -24,6 +48,18 @@ export function AnalysisResults({
   fileName,
 }: AnalysisResultsProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [activeTab, setActiveTab] = useState('red-flags');
+  // Track visited tabs to keep them mounted after first visit (prevents re-loading)
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['red-flags']));
+
+  // Memoize the tab change handler
+  const handleTabChange = useMemo(
+    () => (value: string) => {
+      setActiveTab(value);
+      setVisitedTabs((prev) => new Set([...prev, value]));
+    },
+    []
+  );
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -66,36 +102,56 @@ export function AnalysisResults({
 
       <SummaryCard analysis={analysis} />
 
-      <Tabs defaultValue="red-flags" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="red-flags">
-            Red Flags ({analysis.redFlags.length})
-          </TabsTrigger>
-          <TabsTrigger value="obligations">
-            Obligations ({analysis.obligations.length})
-          </TabsTrigger>
-          <TabsTrigger value="key-terms">
-            Key Terms ({analysis.keyTerms.length})
-          </TabsTrigger>
-          <TabsTrigger value="sections">
-            Sections ({analysis.sections.length})
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+        {/* Scrollable tabs container for mobile */}
+        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+          <TabsList className="inline-flex w-max min-w-full md:grid md:w-full md:grid-cols-4">
+            <TabsTrigger value="red-flags" className="whitespace-nowrap">
+              Red Flags ({analysis.redFlags.length})
+            </TabsTrigger>
+            <TabsTrigger value="obligations" className="whitespace-nowrap">
+              Obligations ({analysis.obligations.length})
+            </TabsTrigger>
+            <TabsTrigger value="key-terms" className="whitespace-nowrap">
+              Key Terms ({analysis.keyTerms.length})
+            </TabsTrigger>
+            <TabsTrigger value="sections" className="whitespace-nowrap">
+              Sections ({analysis.sections.length})
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="red-flags">
-          <RedFlagsCard redFlags={analysis.redFlags} />
+        {/* Lazy-loaded tab content - only mounts when tab is visited */}
+        <TabsContent value="red-flags" forceMount={visitedTabs.has('red-flags') ? undefined : undefined}>
+          {visitedTabs.has('red-flags') && (
+            <Suspense fallback={<TabSkeleton />}>
+              <RedFlagsCard redFlags={analysis.redFlags} />
+            </Suspense>
+          )}
         </TabsContent>
 
         <TabsContent value="obligations">
-          <ObligationsCard obligations={analysis.obligations} />
+          {visitedTabs.has('obligations') && (
+            <Suspense fallback={<TabSkeleton />}>
+              <ObligationsCard obligations={analysis.obligations} />
+            </Suspense>
+          )}
         </TabsContent>
 
         <TabsContent value="key-terms">
-          <KeyTermsCard keyTerms={analysis.keyTerms} />
+          {visitedTabs.has('key-terms') && (
+            <Suspense fallback={<TabSkeleton />}>
+              <KeyTermsCard keyTerms={analysis.keyTerms} />
+            </Suspense>
+          )}
         </TabsContent>
 
         <TabsContent value="sections">
-          <SectionsCard sections={analysis.sections} />
+          {visitedTabs.has('sections') && (
+            <Suspense fallback={<TabSkeleton />}>
+              <SectionsCard sections={analysis.sections} />
+            </Suspense>
+          )}
         </TabsContent>
       </Tabs>
 

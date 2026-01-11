@@ -48,12 +48,12 @@ describe('AI Prompts', () => {
       expect(prompt).not.toContain('{CONTRACT_TEXT}');
     });
 
-    it('truncates very long contracts', () => {
-      const longText = 'A'.repeat(150000);
+    it('truncates very long contracts at 50KB', () => {
+      const longText = 'A'.repeat(60000); // 60KB, should be truncated at 50KB
       const prompt = buildAnalysisPrompt(longText);
 
       expect(prompt.length).toBeLessThan(longText.length);
-      expect(prompt).toContain('[Contract text truncated due to length]');
+      expect(prompt).toContain('[NOTE: Contract text was truncated at 50KB');
     });
 
     it('does not truncate contracts under the limit', () => {
@@ -61,7 +61,7 @@ describe('AI Prompts', () => {
       const prompt = buildAnalysisPrompt(shortText);
 
       expect(prompt).toContain(shortText);
-      expect(prompt).not.toContain('[Contract text truncated due to length]');
+      expect(prompt).not.toContain('[NOTE: Contract text was truncated');
     });
   });
 });

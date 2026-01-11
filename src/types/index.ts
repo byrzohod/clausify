@@ -61,6 +61,15 @@ export interface AmountInfo {
   frequency?: string;
 }
 
+export interface NegotiationTip {
+  priority: 'high' | 'medium' | 'low';
+  topic: string;
+  currentTerm: string;
+  suggestedChange: string;
+  reasoning: string;
+  scriptSuggestion?: string;
+}
+
 export interface AnalysisResult {
   summary: string;
   contractType: ContractType;
@@ -72,6 +81,8 @@ export interface AnalysisResult {
   parties: Party[];
   dates: DateInfo[];
   amounts: AmountInfo[];
+  negotiationTips?: NegotiationTip[];
+  expirationDate?: string | null;
 }
 
 // API types

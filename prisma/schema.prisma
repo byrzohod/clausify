@@ -26,11 +26,20 @@ model User {
   subscriptionId    String?   @unique
   subscriptionEnd   DateTime?
 
+  // Referral info
+  referralCode      String?   @unique @default(cuid())
+
   // Relations
-  accounts  Account[]
-  sessions  Session[]
-  contracts Contract[]
-  templates Template[]
+  accounts          Account[]
+  sessions          Session[]
+  contracts         Contract[]
+  templates         Template[]
+  tags              Tag[]
+  badges            UserBadge[]
+  referralsMade     Referral[] @relation("Referrer")
+  referredBy        Referral?  @relation("Referred")
+  expirationAlerts  ExpirationAlert[]
+  slackIntegration  SlackIntegration?
 
   @@map("users")
 }
@@ -87,10 +96,14 @@ model Contract {
   updatedAt DateTime       @updatedAt
 
   // Relations
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  analysis Analysis?
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis        Analysis?
+  tags            ContractTag[]
+  expirationAlert ExpirationAlert?
 
   @@index([userId])
+  @@index([userId, createdAt])
+  @@index([fileName]) // For search
   @@map("contracts")
 }
 
@@ -118,12 +131,17 @@ model Analysis {
   tokenCount     Int?
   error          String?  @db.Text
 
+  // Cache key for identical content detection
+  contentHash   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
 
+  @@index([status, createdAt])
+  @@index([contentHash, status, createdAt])
   @@map("analyses")
 }
 
@@ -157,7 +175,130 @@ model Template {
 
   @@index([userId])
   @@index([contractType])
+  @@index([userId, contractType])
   @@map("templates")
+}
+
+// Tag model for contract organization
+model Tag {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  color     String   @default("#6366f1") // Default indigo
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contracts ContractTag[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("tags")
+}
+
+// Many-to-many relation between Contract and Tag
+model ContractTag {
+  id         String   @id @default(cuid())
+  contractId String
+  tagId      String
+  createdAt  DateTime @default(now())
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([contractId, tagId])
+  @@index([contractId])
+  @@index([tagId])
+  @@map("contract_tags")
+}
+
+// Badge model for gamification
+model Badge {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "first_analysis", "power_user"
+  name        String
+  description String
+  icon        String   // Icon name or emoji
+  requirement Int      // Number required to earn (e.g., 10 analyses)
+  category    BadgeCategory
+  createdAt   DateTime @default(now())
+
+  // Relations
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+// Many-to-many relation between User and Badge
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@map("user_badges")
+}
+
+// Referral model for referral program
+model Referral {
+  id            String   @id @default(cuid())
+  referrerUserId String
+  referredUserId String  @unique
+  referralCode  String
+  status        ReferralStatus @default(PENDING)
+  bonusApplied  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  completedAt   DateTime?
+
+  referrer User @relation("Referrer", fields: [referrerUserId], references: [id], onDelete: Cascade)
+  referred User @relation("Referred", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([referrerUserId])
+  @@index([referralCode])
+  @@map("referrals")
+}
+
+// Expiration alert model
+model ExpirationAlert {
+  id         String   @id @default(cuid())
+  userId     String
+  contractId String
+  expirationDate DateTime
+  alertDays  Int      @default(30) // Days before to alert
+  notified   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@unique([contractId])
+  @@index([userId])
+  @@index([expirationDate, notified])
+  @@map("expiration_alerts")
+}
+
+// Slack integration model
+model SlackIntegration {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  teamId       String
+  teamName     String
+  accessToken  String   @db.Text
+  webhookUrl   String?
+  channelId    String?
+  channelName  String?
+  notifyOnAnalysis Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("slack_integrations")
 }
 
 // Enums
@@ -167,6 +308,18 @@ enum Plan {
   PRO_MONTHLY
   PRO_ANNUAL
   TEAM
+}
+
+enum BadgeCategory {
+  MILESTONE
+  ACTIVITY
+  SPECIAL
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
 }
 
 enum ContractStatus {

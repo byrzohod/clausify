@@ -3,6 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock dependencies
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn(),
+    },
     contract: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -11,13 +14,16 @@ vi.mock('@/lib/prisma', () => ({
       upsert: vi.fn(),
       update: vi.fn(),
     },
+    $transaction: vi.fn((callback) => callback({
+      contract: { update: vi.fn() },
+      analysis: { upsert: vi.fn().mockResolvedValue({ id: 'analysis-1' }), update: vi.fn() },
+      user: { update: vi.fn() },
+    })),
   },
 }));
 
 vi.mock('@/lib/auth', () => ({
   getSession: vi.fn(),
-  canUserAnalyze: vi.fn(),
-  incrementAnalysisCount: vi.fn(),
 }));
 
 vi.mock('@/lib/storage', () => ({
@@ -38,8 +44,18 @@ vi.mock('@/lib/ai', () => ({
   },
 }));
 
+vi.mock('@/lib/cache', () => ({
+  getCacheHeader: vi.fn().mockReturnValue('no-store'),
+}));
+
+vi.mock('@/lib/ai/analysis-cache', () => ({
+  generateContentHash: vi.fn().mockReturnValue('test-hash'),
+  getCachedAnalysis: vi.fn().mockResolvedValue(null),
+  storeContentHash: vi.fn(),
+}));
+
 import { prisma } from '@/lib/prisma';
-import { getSession, canUserAnalyze, incrementAnalysisCount } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { downloadFile } from '@/lib/storage';
 import { parseDocument } from '@/lib/parsers';
 import { analyzeContract } from '@/lib/ai';
@@ -73,7 +89,18 @@ describe('Analyze API', () => {
         user: { id: 'user-1', email: 'test@example.com' },
         expires: '2026-12-31',
       });
-      vi.mocked(canUserAnalyze).mockResolvedValue(false);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'user-1',
+        plan: 'FREE',
+        analysesUsed: 2,
+        analysesLimit: 2, // At limit
+        subscriptionEnd: null,
+      } as never);
+      vi.mocked(prisma.contract.findUnique).mockResolvedValue({
+        id: 'contract-1',
+        userId: 'user-1',
+        analysis: null,
+      } as never);
 
       const { POST } = await import('@/app/api/analyze/[id]/route');
       const request = new Request('http://localhost/api/analyze/contract-1', {
@@ -95,7 +122,13 @@ describe('Analyze API', () => {
         user: { id: 'user-1', email: 'test@example.com' },
         expires: '2026-12-31',
       });
-      vi.mocked(canUserAnalyze).mockResolvedValue(true);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'user-1',
+        plan: 'FREE',
+        analysesUsed: 0,
+        analysesLimit: 2,
+        subscriptionEnd: null,
+      } as never);
       vi.mocked(prisma.contract.findUnique).mockResolvedValue(null);
 
       const { POST } = await import('@/app/api/analyze/[id]/route');
@@ -118,7 +151,13 @@ describe('Analyze API', () => {
         user: { id: 'user-1', email: 'test@example.com' },
         expires: '2026-12-31',
       });
-      vi.mocked(canUserAnalyze).mockResolvedValue(true);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'user-1',
+        plan: 'FREE',
+        analysesUsed: 0,
+        analysesLimit: 2,
+        subscriptionEnd: null,
+      } as never);
       vi.mocked(prisma.contract.findUnique).mockResolvedValue({
         id: 'contract-1',
         userId: 'user-1',
@@ -160,7 +199,13 @@ describe('Analyze API', () => {
         user: { id: 'user-1', email: 'test@example.com' },
         expires: '2026-12-31',
       });
-      vi.mocked(canUserAnalyze).mockResolvedValue(true);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'user-1',
+        plan: 'FREE',
+        analysesUsed: 0,
+        analysesLimit: 2,
+        subscriptionEnd: null,
+      } as never);
       vi.mocked(prisma.contract.findUnique).mockResolvedValue({
         id: 'contract-1',
         userId: 'user-1',
@@ -168,9 +213,6 @@ describe('Analyze API', () => {
         mimeType: 'application/pdf',
         analysis: null,
       } as never);
-      vi.mocked(prisma.contract.update).mockResolvedValue({} as never);
-      vi.mocked(prisma.analysis.upsert).mockResolvedValue({ id: 'analysis-1' } as never);
-      vi.mocked(prisma.analysis.update).mockResolvedValue({} as never);
       vi.mocked(downloadFile).mockResolvedValue(Buffer.from('PDF content'));
       vi.mocked(parseDocument).mockResolvedValue({
         text: 'This is a test contract...',
@@ -192,7 +234,6 @@ describe('Analyze API', () => {
         tokenCount: 500,
         processingTime: 2000,
       } as never);
-      vi.mocked(incrementAnalysisCount).mockResolvedValue(undefined);
 
       const { POST } = await import('@/app/api/analyze/[id]/route');
       const request = new Request('http://localhost/api/analyze/contract-1', {
@@ -212,7 +253,6 @@ describe('Analyze API', () => {
       expect(downloadFile).toHaveBeenCalled();
       expect(parseDocument).toHaveBeenCalled();
       expect(analyzeContract).toHaveBeenCalled();
-      expect(incrementAnalysisCount).toHaveBeenCalledWith('user-1');
     });
   });
 

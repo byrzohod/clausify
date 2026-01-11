@@ -42,8 +42,13 @@ import { headers } from 'next/headers';
 import type Stripe from 'stripe';
 
 describe('Stripe Webhook', () => {
+  const originalEnv = process.env;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
+    // Mock STRIPE_WEBHOOK_SECRET environment variable
+    process.env = { ...originalEnv, STRIPE_WEBHOOK_SECRET: 'whsec_test_secret' };
     // Default mock for successful signature verification
     vi.mocked(stripe.webhooks.constructEvent).mockImplementation(() => ({
       id: 'evt_test_123',
@@ -51,6 +56,33 @@ describe('Stripe Webhook', () => {
       created: Math.floor(Date.now() / 1000),
       data: { object: {} },
     } as unknown as Stripe.Event));
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  describe('Configuration', () => {
+    it('should return 500 if STRIPE_WEBHOOK_SECRET is not configured', async () => {
+      // Remove the webhook secret
+      delete process.env.STRIPE_WEBHOOK_SECRET;
+
+      vi.mocked(headers).mockResolvedValue({
+        get: vi.fn((key: string) => key === 'stripe-signature' ? 'valid_sig' : null),
+      } as ReturnType<typeof headers> extends Promise<infer T> ? T : never);
+
+      const { POST } = await import('@/app/api/webhooks/stripe/route');
+      const request = new Request('http://localhost/api/webhooks/stripe', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+
+      const response = await POST(request as unknown as Parameters<typeof POST>[0]);
+      expect(response.status).toBe(500);
+
+      const data = await response.json();
+      expect(data.error).toBe('Webhook configuration error');
+    });
   });
 
   describe('Signature Verification', () => {

@@ -3,6 +3,38 @@
 // For multi-instance deployments, use a separate rate limiting service
 const memoryStore = new Map<string, { count: number; resetTime: number }>();
 
+// Cleanup configuration
+const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
+const MAX_ENTRIES = 10000; // Maximum entries before forced cleanup
+let lastCleanup = Date.now();
+
+/**
+ * Clean up expired entries from the rate limit store
+ * This prevents memory leaks from unique IPs
+ */
+function cleanupExpiredEntries(): void {
+  const now = Date.now();
+
+  // Only cleanup if enough time has passed or we hit the max entries
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS && memoryStore.size < MAX_ENTRIES) {
+    return;
+  }
+
+  let cleaned = 0;
+  for (const [key, record] of memoryStore.entries()) {
+    if (now > record.resetTime) {
+      memoryStore.delete(key);
+      cleaned++;
+    }
+  }
+
+  lastCleanup = now;
+
+  if (cleaned > 0) {
+    console.log(`[RateLimit] Cleaned up ${cleaned} expired entries. Store size: ${memoryStore.size}`);
+  }
+}
+
 // Rate limit configuration per endpoint pattern
 export const rateLimitConfig: Record<string, { windowMs: number; max: number }> = {
   '/api/auth/signup': { windowMs: 60 * 60 * 1000, max: 10 }, // 10 signups per hour per IP
@@ -52,6 +84,8 @@ export async function checkRateLimit(
   key: string,
   config: { windowMs: number; max: number }
 ): Promise<RateLimitResult> {
+  // Run cleanup before checking (amortized cost)
+  cleanupExpiredEntries();
   return checkRateLimitMemory(key, config);
 }
 

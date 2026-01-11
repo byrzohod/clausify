@@ -104,16 +104,20 @@ export default function ContractPage() {
     setError(null);
     setAnalysisProgress(0);
 
-    // Simulate progress
+    // Simulate progress with cap at 85% until actually complete
+    // This prevents the deceptive 90%+ progress that might never complete
     const progressInterval = setInterval(() => {
       setAnalysisProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
+        if (prev >= 85) {
+          // Cap at 85% - honest progress indication
+          return 85;
         }
-        return prev + Math.random() * 10;
+        // Slower progress as we approach the cap
+        const remaining = 85 - prev;
+        const increment = Math.min(remaining * 0.1, Math.random() * 8);
+        return prev + increment;
       });
-    }, 500);
+    }, 800);
 
     try {
       const response = await fetch(`/api/analyze/${id}`, {
@@ -121,7 +125,6 @@ export default function ContractPage() {
       });
 
       clearInterval(progressInterval);
-      setAnalysisProgress(100);
 
       if (!response.ok) {
         const data = await response.json();
@@ -131,6 +134,8 @@ export default function ContractPage() {
       const data = await response.json();
 
       if (data.status === 'COMPLETED' && data.result) {
+        // Only show 100% when actually complete
+        setAnalysisProgress(100);
         setAnalysisResult(data.result);
         toast.success('Analysis complete!');
       }
@@ -146,22 +151,31 @@ export default function ContractPage() {
 
   const pollAnalysisStatus = async () => {
     setIsAnalyzing(true);
+    let pollCount = 0;
+    const maxPolls = 60; // Max 2 minutes of polling
 
     const poll = async () => {
+      pollCount++;
+
       try {
         const response = await fetch(`/api/analyze/${id}`);
         const data = await response.json();
 
         if (data.status === 'COMPLETED' && data.result) {
+          setAnalysisProgress(100);
           setAnalysisResult(data.result);
           setIsAnalyzing(false);
           toast.success('Analysis complete!');
         } else if (data.status === 'FAILED') {
           setError(data.error || 'Analysis failed');
           setIsAnalyzing(false);
+        } else if (pollCount >= maxPolls) {
+          setError('Analysis is taking longer than expected. Please refresh the page.');
+          setIsAnalyzing(false);
         } else {
-          // Still processing, poll again
-          setTimeout(poll, 2000);
+          // Exponential backoff: 2s, 3s, 4s, 5s, then cap at 5s
+          const delay = Math.min(2000 + pollCount * 500, 5000);
+          setTimeout(poll, delay);
         }
       } catch (error) {
         setError('Failed to check analysis status');
