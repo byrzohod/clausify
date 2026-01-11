@@ -7,18 +7,50 @@
 ## Overview
 
 ```
-Phase 1: MVP Build        [████████████████████]  COMPLETE
+Phase 1: MVP Build        [####################]  COMPLETE
 Phase 2: Launch & Learn   [░░░░░░░░░░░░░░░░░░░░]  Pending
-Phase 3: Monetization     [████████████████████]  COMPLETE (Stripe integrated)
-Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░░░░]  Pending
+Phase 3: Monetization     [####################]  COMPLETE (Stripe integrated)
+Phase 4: Growth Features  [####################]  COMPLETE (v1.1)
+Phase 5: Test Coverage    [░░░░░░░░░░░░░░░░░░░░]  In Progress
 ```
+
+---
+
+## v1.1 - Comparison + Stability
+
+**Goal:** Contract comparison feature + production stability fixes
+**Status:** COMPLETE (2026-01-11)
+
+### Phase Summary
+
+| Phase | Name | Status | Completed |
+|-------|------|--------|-----------|
+| 1 | Foundation Fixes | Done | 2026-01-11 |
+| 2 | Redis Rate Limiting | Done | 2026-01-11 |
+| 3 | Comparison UI | Done | 2026-01-11 |
+| 4 | Diff Engine | Done | 2026-01-11 |
+| 5 | Template Matching | Done | 2026-01-11 |
+| 6 | Comparative Analysis | Done | 2026-01-11 |
+| 7 | Webhook Reliability | Done | 2026-01-11 |
+
+### Features Delivered
+- Debug logging cleanup (47 console.logs removed)
+- Health endpoint for monitoring
+- Redis rate limiting for multi-instance scaling
+- Dual file upload for contract comparison
+- Side-by-side contract view
+- Text diff engine with highlighting
+- Template matching (save/compare)
+- AI comparative analysis
+- Comprehensive webhook logging
+
+**See:** `.planning/ROADMAP.md` for detailed phase information
 
 ---
 
 ## Phase 1: MVP Build
 
 **Goal:** Working product that can analyze contracts and show results.
-
 **Status:** COMPLETE
 
 ### Sprint 1.1: Foundation (Days 1-3)
@@ -33,7 +65,7 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | PDF parsing | F-002 | `DONE` | pdf-parse integration |
 | DOCX parsing | F-002 | `DONE` | mammoth.js integration |
 
-**Milestone:** ✅ Can upload a contract and extract text.
+**Milestone:** Can upload a contract and extract text.
 
 ### Sprint 1.2: AI Integration (Days 4-6)
 
@@ -43,10 +75,10 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | Analysis prompt | F-003 | `DONE` | Comprehensive prompt engineering |
 | Response parsing | F-003 | `DONE` | JSON validation & normalization |
 | Store results | F-003 | `DONE` | Prisma Analysis model |
-| Processing status | F-003 | `DONE` | PENDING → PROCESSING → COMPLETED |
+| Processing status | F-003 | `DONE` | PENDING > PROCESSING > COMPLETED |
 | Error handling | F-003 | `DONE` | AIError class, retries |
 
-**Milestone:** ✅ Contract uploaded → AI analysis stored in DB.
+**Milestone:** Contract uploaded > AI analysis stored in DB.
 
 ### Sprint 1.3: Results & Auth (Days 7-10)
 
@@ -61,7 +93,7 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | Login flow | F-005 | `DONE` | JWT session handling |
 | Protected routes | F-005 | `DONE` | getSession checks |
 
-**Milestone:** ✅ Full flow works - upload, analyze, view results (authenticated).
+**Milestone:** Full flow works - upload, analyze, view results (authenticated).
 
 ### Sprint 1.4: Dashboard & Polish (Days 11-14)
 
@@ -76,14 +108,13 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | Responsive design | - | `DONE` | Tailwind responsive classes |
 | Error boundaries | - | `DONE` | Error handling throughout |
 
-**Milestone:** ✅ MVP complete, ready for soft launch.
+**Milestone:** MVP complete, ready for soft launch.
 
 ---
 
 ## Phase 2: Launch & Learn
 
 **Goal:** Get real users, gather feedback, fix critical issues.
-
 **Status:** Pending (requires deployment)
 
 ### Sprint 2.1: Launch Prep
@@ -97,33 +128,11 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | Legal pages | `DONE` | /terms and /privacy pages |
 | Production deploy | `TODO` | Custom domain |
 
-### Sprint 2.2: Soft Launch
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Share on Twitter/X | `TODO` | Indie hacker community |
-| Post on Reddit | `TODO` | Relevant subreddits |
-| Gather feedback | `TODO` | User interviews |
-| Bug fixes | `TODO` | Address critical issues |
-| Performance tuning | `TODO` | Optimize slow areas |
-
-### Sprint 2.3: Product Hunt Prep
-
-| Task | Status | Notes |
-|------|--------|-------|
-| PH assets | `TODO` | Logo, screenshots, video |
-| PH copy | `TODO` | Tagline, description |
-| Hunter outreach | `TODO` | Find a hunter |
-| Launch day plan | `TODO` | Schedule, support |
-
-**Milestone:** 100+ users, validated demand, critical bugs fixed.
-
 ---
 
 ## Phase 3: Monetization
 
 **Goal:** Implement payments, start generating revenue.
-
 **Status:** COMPLETE (Stripe integration done)
 
 ### Sprint 3.1: Stripe Integration
@@ -137,33 +146,20 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | Subscription logic | F-011 | `DONE` | Plan updates on payment |
 | Customer portal | F-011 | `DONE` | /api/billing/portal |
 
-### Sprint 3.2: Billing Polish
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Pricing page | `DONE` | /pricing with 4 tiers |
-| Upgrade prompts | `DONE` | In dashboard when at limit |
-| Receipt emails | `TODO` | Handled by Stripe |
-| Failed payment handling | `DONE` | Webhook handles failures |
-| Usage reset (monthly) | `DONE` | Logic in webhook |
-
-**Milestone:** Payment system ready for first paying customer!
-
 ---
 
 ## Phase 4: Growth Features
 
 **Goal:** Add features that increase retention and expand market.
-
-**Status:** Pending
-
-### Potential Features (Prioritize based on feedback)
+**Status:** COMPLETE (v1.1)
 
 | Feature | Priority | Effort | Impact | Status |
 |---------|----------|--------|--------|--------|
 | PDF export | High | Low | Medium | `DONE` |
-| Google OAuth | High | Low | Medium | `TODO` |
-| Contract comparison | Medium | High | High | `TODO` |
+| Google OAuth | High | Low | Medium | `DONE` |
+| Contract comparison | Medium | High | High | `DONE` (v1.1) |
+| Template matching | Medium | Medium | High | `DONE` (v1.1) |
+| Redis rate limiting | High | Medium | High | `DONE` (v1.1) |
 | Email notifications | Medium | Low | Low | `TODO` |
 | OCR for scanned docs | Medium | Medium | Medium | `TODO` |
 | Browser extension | Low | High | High | `TODO` |
@@ -172,35 +168,33 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 
 ---
 
+## Phase 5: Test Coverage
+
+**Goal:** Comprehensive test coverage for reliability and maintainability.
+**Status:** In Progress
+
+See: `.planning/TEST-PLAN.md` for detailed plan
+
+| Task | Priority | Status |
+|------|----------|--------|
+| Critical unit tests (API routes) | P1 | In Progress |
+| Component tests | P2 | Pending |
+| Integration tests | P2 | Pending |
+| E2E user journeys | P2 | Pending |
+| Target: 300+ tests, 80%+ coverage | - | Pending |
+
+---
+
 ## Milestones Summary
 
 | Milestone | Target | Success Criteria | Status |
 |-----------|--------|------------------|--------|
-| M1: MVP Complete | End of Week 2 | Working upload → analyze → results flow | ✅ DONE |
-| M2: Soft Launch | End of Week 3 | 50+ signups, feedback collected | Pending |
-| M3: Product Hunt | End of Week 4 | Top 10 of the day, 500+ signups | Pending |
-| M4: First Revenue | End of Week 6 | $100+ MRR | Pending |
-| M5: Ramen Profitable | Month 3 | Covers server costs | Pending |
-| M6: Sustainable | Month 6 | $2,000+ MRR | Pending |
-
----
-
-## Risk Checkpoints
-
-### Week 2 Check
-- [x] Core flow working? ✅ Yes
-- [x] AI quality acceptable? ✅ Yes (Claude Sonnet)
-- [x] Any technical blockers? ✅ None
-
-### Week 4 Check
-- [ ] User interest validated?
-- [ ] Feedback actionable?
-- [ ] Pivot needed?
-
-### Week 8 Check
-- [ ] Revenue growing?
-- [ ] Retention healthy?
-- [ ] Worth continued investment?
+| M1: MVP Complete | End of Week 2 | Working upload > analyze > results flow | DONE |
+| M2: v1.1 Complete | End of Week 4 | Contract comparison, stability fixes | DONE |
+| M3: Soft Launch | TBD | 50+ signups, feedback collected | Pending |
+| M4: Product Hunt | TBD | Top 10 of the day, 500+ signups | Pending |
+| M5: First Revenue | TBD | $100+ MRR | Pending |
+| M6: Test Coverage | TBD | 300+ tests, 80%+ coverage | In Progress |
 
 ---
 
@@ -211,6 +205,7 @@ Phase 4: Growth Features  [░░░░░░░░░░░░░░░░░�
 | Supabase account | All | `READY` | Config created |
 | Claude API key | F-003 | `READY` | Client configured |
 | Stripe account | F-011 | `READY` | Integration complete |
+| Redis (Railway) | F-018 | `READY` | Rate limiting works |
 | Domain name | Launch | `TODO` | clausify.com / .ai / .app |
 | Vercel account | Deploy | `TODO` | Free tier to start |
 

@@ -7,8 +7,8 @@
 ## Quick Stats
 
 ```
-Total Tasks:    20
-Completed:      20
+Total Tasks:    31
+Completed:      31
 In Progress:    0
 Blocked:        0
 ```
@@ -19,14 +19,14 @@ Blocked:        0
 
 ## Current Sprint
 
-**Sprint:** 1.0 - MVP Complete
-**Goal:** Full MVP implementation with all features
+**Sprint:** v1.1 - Comparison + Stability
+**Goal:** Contract comparison feature + production stability
 **Duration:** Completed
 **Status:** DONE
 
 ### Completed Tasks
 
-All MVP tasks have been completed. See "Done" section below.
+All v1.1 tasks have been completed. See "Done" section below.
 
 ---
 
@@ -36,7 +36,9 @@ All MVP tasks have been completed. See "Done" section below.
 
 | ID | Task | Feature | Priority | Effort | Notes |
 |----|------|---------|----------|--------|-------|
-| | No pending tasks | | | | All MVP tasks completed |
+| T-032 | Add unit tests for API routes | Testing | P1 | M | See TEST-PLAN.md |
+| T-033 | Add component tests | Testing | P2 | M | See TEST-PLAN.md |
+| T-034 | Add E2E user journey tests | Testing | P2 | L | See TEST-PLAN.md |
 
 ### In Progress
 
@@ -44,22 +46,11 @@ All MVP tasks have been completed. See "Done" section below.
 |----|------|----------|---------|-------|
 | | No tasks in progress | | | |
 
-### In Review
-
-| ID | Task | Reviewer | Notes |
-|----|------|----------|-------|
-| | No tasks in review | | |
-
-### Blocked
-
-| ID | Task | Blocked By | Notes |
-|----|------|------------|-------|
-| | No blocked tasks | | |
-
 ### Done
 
 | ID | Task | Completed | Notes |
 |----|------|-----------|-------|
+| **MVP (v1.0)** | | | |
 | T-001 | Initialize Next.js project | 2024-01-11 | TypeScript, Tailwind, App Router |
 | T-002 | Setup Supabase project | 2024-01-11 | Client configuration created |
 | T-003 | Configure environment variables | 2024-01-11 | .env.example created |
@@ -84,6 +75,14 @@ All MVP tasks have been completed. See "Done" section below.
 | T-022 | Write integration tests | 2024-01-11 | 13 tests passing |
 | T-023 | Write E2E tests | 2024-01-11 | Playwright configured |
 | T-024 | Manual testing | 2024-01-11 | All pages verified |
+| **v1.1 - Comparison + Stability** | | | |
+| T-025 | Foundation fixes (debug logs, health) | 2026-01-11 | Phase 1 complete |
+| T-026 | Redis rate limiting | 2026-01-11 | Phase 2 complete |
+| T-027 | Comparison UI (dual upload) | 2026-01-11 | Phase 3 complete |
+| T-028 | Diff engine (text comparison) | 2026-01-11 | Phase 4 complete |
+| T-029 | Template matching | 2026-01-11 | Phase 5 complete |
+| T-030 | Comparative AI analysis | 2026-01-11 | Phase 6 complete |
+| T-031 | Webhook reliability | 2026-01-11 | Phase 7 complete |
 
 ---
 
@@ -105,6 +104,8 @@ All MVP tasks have been completed. See "Done" section below.
 | B-004 | NextAuth signUp page option | 2024-01-11 | Removed invalid option |
 | B-005 | useSearchParams Suspense | 2024-01-11 | Added Suspense boundaries |
 | B-006 | Build-time env var errors | 2024-01-11 | Lazy client initialization |
+| B-007 | ScrollArea component missing | 2026-01-11 | Used overflow-auto div |
+| B-008 | Set iteration TypeScript error | 2026-01-11 | Used Array.from() |
 
 ---
 
@@ -112,9 +113,10 @@ All MVP tasks have been completed. See "Done" section below.
 
 | ID | Description | Priority | Effort | Notes |
 |----|-------------|----------|--------|-------|
-| TD-001 | Add OCR support for scanned PDFs | P3 | L | Phase 2 feature |
-| TD-002 | Add Google OAuth | P3 | S | Phase 2 feature |
-| TD-003 | Implement contract comparison | P3 | L | Phase 2 feature |
+| TD-001 | Add OCR support for scanned PDFs | P3 | L | Future feature |
+| TD-002 | ~~Add Google OAuth~~ | ~~P3~~ | ~~S~~ | DONE in v1.0 |
+| TD-003 | ~~Implement contract comparison~~ | ~~P3~~ | ~~L~~ | DONE in v1.1 |
+| TD-004 | Increase test coverage to 80%+ | P1 | L | See TEST-PLAN.md |
 
 ---
 
@@ -122,9 +124,11 @@ All MVP tasks have been completed. See "Done" section below.
 
 | Test Type | Files | Tests | Status |
 |-----------|-------|-------|--------|
-| Unit Tests | 7 | 57 | All Passing |
-| Integration Tests | 2 | 13 | All Passing |
-| E2E Tests | 4 | 27 (per browser) | All Passing |
+| Unit Tests | 18 | 171 | All Passing |
+| Integration Tests | 2 | 15 | All Passing |
+| E2E Tests | 4 | 6+ | Configured |
+
+**Target:** 300+ tests, 80%+ coverage (see .planning/TEST-PLAN.md)
 
 ---
 
@@ -135,13 +139,18 @@ All MVP tasks have been completed. See "Done" section below.
 | TypeScript | Passing |
 | ESLint | No warnings |
 | Build | Successful |
-| Unit Tests | 57/57 passing |
-| Integration Tests | 13/13 passing |
-| E2E Tests | 27/27 passing (Chromium) |
+| Unit Tests | 171/171 passing |
+| Integration Tests | All passing |
+| E2E Tests | Configured |
 
 ---
 
 ## Sprint History
+
+### Sprint v1.1 - Comparison + Stability
+- **Status:** DONE
+- **Goal:** Contract comparison + production stability
+- **Outcome:** All 7 phases completed, 171 tests passing
 
 ### Sprint 1.0 - MVP Complete
 - **Status:** DONE

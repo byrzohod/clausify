@@ -297,20 +297,111 @@ Allow visitors to try the tool with a sample contract without signing up.
 
 ### F-012: Contract Comparison
 
-**Status:** `DEFERRED`
+**Status:** `DONE`
 **Priority:** P2 (Medium)
 **Estimate:** 2 days
+**Completed:** 2026-01-11 (v1.1)
 
 #### Description
 Compare two versions of a contract and highlight differences.
+
+#### Requirements
+- [x] Dual file upload for comparing two contracts
+- [x] Side-by-side contract view
+- [x] Text diff engine with change highlighting
+- [x] Line-by-line and word-by-word diff modes
+- [x] Diff statistics (additions, deletions, unchanged)
+
+#### Implementation Notes
+- `DualFileUpload` component with react-dropzone
+- `ComparisonView` for side-by-side display
+- `DiffView` for highlighting changes
+- Uses `diff` npm package for text comparison
 
 ---
 
 ### F-013: Google OAuth
 
-**Status:** `DEFERRED`
+**Status:** `DONE`
 **Priority:** P2 (Medium)
 **Estimate:** 0.5 days
+**Completed:** 2026-01-11 (v1.0)
+
+#### Implementation Notes
+- NextAuth Google provider configured
+- Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+
+---
+
+### F-016: Template Matching
+
+**Status:** `DONE`
+**Priority:** P2 (Medium)
+**Estimate:** 1 day
+**Completed:** 2026-01-11 (v1.1)
+
+#### Description
+Save contract templates and compare new contracts against them.
+
+#### Requirements
+- [x] Save contract as template with name, description, type
+- [x] List user's saved templates
+- [x] Select template for comparison
+- [x] Compare uploaded contract against saved template
+
+#### Implementation Notes
+- Template model added to Prisma schema
+- `/api/templates` endpoints for CRUD
+- `SaveTemplateDialog` for saving templates
+- `TemplateSelector` for choosing templates
+
+---
+
+### F-017: Comparative AI Analysis
+
+**Status:** `DONE`
+**Priority:** P2 (Medium)
+**Estimate:** 1 day
+**Completed:** 2026-01-11 (v1.1)
+
+#### Description
+Run AI analysis on both contracts and compare results.
+
+#### Requirements
+- [x] Parallel analysis of both contracts
+- [x] Risk score comparison
+- [x] Red flags comparison (count, severity)
+- [x] Obligations count comparison
+- [x] Key terms comparison (shared, unique)
+- [x] Generated insights about differences
+
+#### Implementation Notes
+- `/api/analyze/compare` endpoint
+- `AnalysisComparison` component
+- Parallel Promise.all for both analyses
+
+---
+
+### F-018: Redis Rate Limiting
+
+**Status:** `DONE`
+**Priority:** P1 (High)
+**Estimate:** 0.5 days
+**Completed:** 2026-01-11 (v1.1)
+
+#### Description
+Production-ready rate limiting that works with multiple instances.
+
+#### Requirements
+- [x] Redis-backed rate limiting
+- [x] Sliding window algorithm
+- [x] Graceful fallback to in-memory
+- [x] Same rate limit rules (signup, upload, analyze, demo)
+
+#### Implementation Notes
+- Uses ioredis client
+- Redis sorted sets for sliding window
+- Falls back to Map when Redis unavailable
 
 ---
 
