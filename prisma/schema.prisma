@@ -30,6 +30,7 @@ model User {
   accounts  Account[]
   sessions  Session[]
   contracts Contract[]
+  templates Template[]
 
   @@map("users")
 }
@@ -137,6 +138,26 @@ model DemoAnalysis {
 
   @@index([ipAddress])
   @@map("demo_analyses")
+}
+
+// Contract template for comparison
+model Template {
+  id           String       @id @default(cuid())
+  userId       String
+  name         String
+  description  String?
+  contractType ContractType
+  content      String       @db.Text
+  isPublic     Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contractType])
+  @@map("templates")
 }
 
 // Enums
