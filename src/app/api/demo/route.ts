@@ -1,36 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/options';
 import { prisma } from '@/lib/prisma';
 import { parseDocument } from '@/lib/parsers';
 import { analyzeContract, AIError } from '@/lib/ai';
-import { headers } from 'next/headers';
 
-// Rate limit: 1 demo per IP per hour
-const DEMO_RATE_LIMIT_HOURS = 1;
+// Rate limit: 2 demos per user (free tier limit)
+const MAX_DEMO_ANALYSES = 2;
 const MAX_DEMO_FILE_SIZE = 5 * 1024 * 1024; // 5MB for demo
 
 export async function POST(request: NextRequest) {
   try {
-    const headersList = await headers();
-    const ip =
-      headersList.get('x-forwarded-for')?.split(',')[0] ||
-      headersList.get('x-real-ip') ||
-      'unknown';
-
-    // Check rate limit
-    const recentDemo = await prisma.demoAnalysis.findFirst({
-      where: {
-        ipAddress: ip,
-        createdAt: {
-          gte: new Date(Date.now() - DEMO_RATE_LIMIT_HOURS * 60 * 60 * 1000),
+    // Require authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        {
+          error: 'Authentication required. Please sign up or log in to try a demo analysis.',
+          requiresAuth: true,
         },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+
+    // Check user's demo/analysis count
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        plan: true,
+        analysesUsed: true,
+        analysesLimit: true,
       },
     });
 
-    if (recentDemo) {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user has remaining analyses
+    if (user.analysesUsed >= user.analysesLimit) {
       return NextResponse.json(
         {
-          error:
-            'Demo limit reached. Please sign up for free to analyze more contracts.',
+          error: `You've used all ${user.analysesLimit} free analyses. Upgrade to Pro for unlimited analyses.`,
+          upgradeRequired: true,
         },
         { status: 429 }
       );
@@ -84,28 +101,41 @@ export async function POST(request: NextRequest) {
     // Analyze with AI
     const { result } = await analyzeContract(parsed.text);
 
-    // Save demo record for rate limiting
+    // Increment user's analysis count atomically
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        analysesUsed: { increment: 1 },
+      },
+    });
+
+    // Save demo record for history
     await prisma.demoAnalysis.create({
       data: {
-        ipAddress: ip,
+        ipAddress: userId, // Use userId instead of IP for tracking
         contractType: result.contractType,
         analysisData: JSON.parse(JSON.stringify(result)),
       },
     });
 
+    const remainingAnalyses = user.analysesLimit - user.analysesUsed - 1;
+
     return NextResponse.json({
       status: 'COMPLETED',
       result,
       isDemo: true,
+      remainingAnalyses,
       message:
-        'This is a demo analysis. Sign up for free to save your analyses and get 2 free contract reviews.',
+        remainingAnalyses > 0
+          ? `You have ${remainingAnalyses} free analysis${remainingAnalyses !== 1 ? 'es' : ''} remaining.`
+          : 'This was your last free analysis. Upgrade to Pro for unlimited analyses.',
     });
   } catch (error) {
     console.error('Demo analysis error:', error);
 
     if (error instanceof AIError) {
       return NextResponse.json(
-        { error: `Analysis failed: ${error.message}` },
+        { error: 'Analysis failed. Please try again later.' },
         { status: 500 }
       );
     }

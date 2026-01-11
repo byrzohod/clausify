@@ -785,6 +785,127 @@ Use these skills for common operations:
 
 ---
 
+## Security Implementation
+
+### Security Middleware (`src/middleware.ts`)
+
+The app includes a comprehensive security middleware that provides:
+
+1. **Rate Limiting** - Per-user and per-IP rate limiting:
+   - `/api/auth/signup`: 5 per hour per IP
+   - `/api/contracts/upload`: 10 per minute per user
+   - `/api/analyze`: 5 per minute per user
+   - `/api/demo`: 2 per hour per user
+   - Default: 100 per minute
+
+2. **Security Headers**:
+   - `X-Content-Type-Options: nosniff`
+   - `X-Frame-Options: DENY`
+   - `X-XSS-Protection: 1; mode=block`
+   - `Referrer-Policy: strict-origin-when-cross-origin`
+   - `Strict-Transport-Security`
+   - `Content-Security-Policy`
+
+3. **Path Traversal Protection** - File download endpoints validate paths
+
+### Authentication
+
+The app supports multiple auth methods:
+
+1. **Email/Password** - Traditional credentials
+2. **Google OAuth** - "Sign in with Google" button
+
+To enable Google OAuth:
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create OAuth 2.0 credentials
+3. Add authorized redirect URI: `https://your-domain.com/api/auth/callback/google`
+4. Set environment variables:
+   ```bash
+   GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+   GOOGLE_CLIENT_SECRET="your-client-secret"
+   ```
+
+### Demo/Trial System
+
+- Demo functionality **requires authentication**
+- Free users get 2 analyses (not just demos)
+- Analyses count toward user's limit
+- Upgrade prompts when limit reached
+
+---
+
+## Deployment
+
+### Railway Deployment
+
+The app is configured for Railway deployment with:
+
+- `nixpacks.toml` - Build configuration
+- `railway.toml` - Deployment settings
+
+**Required Environment Variables on Railway:**
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Reference from PostgreSQL service |
+| `NEXTAUTH_SECRET` | Generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Your Railway app URL |
+| `AI_PROVIDER` | `anthropic` |
+| `ANTHROPIC_API_KEY` | Your Anthropic API key |
+| `STORAGE_PROVIDER` | `local` |
+| `LOCAL_STORAGE_PATH` | `/app/uploads` |
+| `GOOGLE_CLIENT_ID` | (Optional) Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth |
+
+**Required Services:**
+1. PostgreSQL database
+2. Volume mounted at `/app/uploads`
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+### Railway CLI
+
+```bash
+# Login to Railway
+railway login
+
+# Link to project
+railway link
+
+# Set environment variables
+railway variables --set "KEY=value"
+
+# View logs
+railway logs
+
+# Redeploy
+railway redeploy -y
+```
+
+---
+
+## Security Audit Summary
+
+A comprehensive OWASP Top 10 security audit was conducted. Key findings addressed:
+
+| Issue | Status |
+|-------|--------|
+| Path Traversal | Fixed |
+| Rate Limiting | Implemented |
+| Security Headers | Implemented |
+| TOCTOU Race Conditions | Fixed |
+| Session Security | Hardened (24h expiry) |
+| Input Validation | Implemented |
+| Error Message Leakage | Fixed |
+
+Remaining recommendations for future:
+- Add audit logging
+- Implement MFA
+- Add email verification
+- Client-side encryption for sensitive files
+
+---
+
 ## Notes for Claude
 
 When working on this project:

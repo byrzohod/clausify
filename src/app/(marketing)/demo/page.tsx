@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { FileUpload } from '@/components/forms/file-upload';
@@ -16,12 +17,13 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowRight, Lock } from 'lucide-react';
 import Link from 'next/link';
 import type { AnalysisResult } from '@/types';
 
 export default function DemoPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -29,6 +31,7 @@ export default function DemoPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null
   );
+  const [remainingAnalyses, setRemainingAnalyses] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleUpload = async (file: File) => {
@@ -71,16 +74,27 @@ export default function DemoPage() {
       clearInterval(analysisInterval);
       setAnalysisProgress(100);
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
+        // Check if authentication is required
+        if (data.requiresAuth) {
+          router.push('/login?callbackUrl=/demo');
+          return;
+        }
+        // Check if upgrade is required
+        if (data.upgradeRequired) {
+          toast.error(data.error);
+          router.push('/pricing');
+          return;
+        }
         throw new Error(data.error || 'Analysis failed');
       }
 
-      const data = await response.json();
-
       if (data.status === 'COMPLETED' && data.result) {
         setAnalysisResult(data.result);
-        toast.success('Demo analysis complete!');
+        setRemainingAnalyses(data.remainingAnalyses);
+        toast.success(data.message || 'Demo analysis complete!');
       }
     } catch (error) {
       setError(
@@ -95,6 +109,70 @@ export default function DemoPage() {
     }
   };
 
+  // Loading state while checking session
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex flex-1 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Not authenticated - show login prompt
+  if (!session) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 py-12">
+          <div className="container max-w-xl">
+            <Card>
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Lock className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">Sign in to Try Demo</CardTitle>
+                <CardDescription>
+                  Create a free account to analyze up to 2 contracts at no cost.
+                  It only takes a minute!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <h4 className="mb-2 font-medium">Free Account Benefits</h4>
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    <li>- 2 free contract analyses</li>
+                    <li>- Save and access your results anytime</li>
+                    <li>- Get plain English summaries</li>
+                    <li>- Identify red flags and risks</li>
+                  </ul>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <Link href="/signup?callbackUrl=/demo" className="w-full">
+                    <Button className="w-full">
+                      Create Free Account
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/login?callbackUrl=/demo" className="w-full">
+                    <Button variant="outline" className="w-full">
+                      Already have an account? Sign In
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -102,10 +180,14 @@ export default function DemoPage() {
       <main className="flex-1 py-12">
         <div className="container max-w-4xl">
           <div className="mb-8 text-center">
-            <h1 className="mb-4 text-4xl font-bold">Try Clausify Demo</h1>
+            <h1 className="mb-4 text-4xl font-bold">Try Clausify</h1>
             <p className="text-lg text-muted-foreground">
-              Upload any contract and see our AI analysis in action. No account
-              required.
+              Upload any contract and see our AI analysis in action.
+              {remainingAnalyses !== null && (
+                <span className="block mt-1 text-sm">
+                  You have {remainingAnalyses} free analysis{remainingAnalyses !== 1 ? 'es' : ''} remaining.
+                </span>
+              )}
             </p>
           </div>
 
@@ -114,7 +196,7 @@ export default function DemoPage() {
               <CardHeader>
                 <CardTitle>Upload a Contract</CardTitle>
                 <CardDescription>
-                  Drop your PDF or DOCX file to try our analysis (max 5MB)
+                  Drop your PDF or DOCX file to analyze (max 5MB)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -133,21 +215,13 @@ export default function DemoPage() {
                 )}
 
                 <div className="mt-6 rounded-lg bg-muted/50 p-4">
-                  <h4 className="mb-2 font-medium">Demo Limitations</h4>
+                  <h4 className="mb-2 font-medium">What You Get</h4>
                   <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li>- Maximum file size: 5MB</li>
-                    <li>- 1 demo analysis per hour per IP</li>
-                    <li>- Results are not saved</li>
+                    <li>- Plain English summary of your contract</li>
+                    <li>- Key terms and obligations identified</li>
+                    <li>- Red flags and risk assessment</li>
+                    <li>- Important dates and deadlines</li>
                   </ul>
-                  <p className="mt-3 text-sm">
-                    <Link
-                      href="/signup"
-                      className="font-medium text-primary hover:underline"
-                    >
-                      Sign up for free
-                    </Link>{' '}
-                    to save your analyses and get 2 free reviews.
-                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -182,38 +256,42 @@ export default function DemoPage() {
 
           {analysisResult && (
             <>
-              <div className="mb-6 rounded-lg border border-primary bg-primary/5 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-primary">
-                      Demo Analysis Complete
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Sign up to save your analyses and get 2 free reviews
-                    </p>
+              {remainingAnalyses === 0 && (
+                <div className="mb-6 rounded-lg border border-amber-500 bg-amber-500/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-amber-600">
+                        You&apos;ve used all your free analyses
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Upgrade to Pro for unlimited contract analyses
+                      </p>
+                    </div>
+                    <Link href="/pricing">
+                      <Button>
+                        Upgrade to Pro
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
-                  <Link href="/signup">
-                    <Button>
-                      Sign Up Free
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
                 </div>
-              </div>
+              )}
 
-              <AnalysisResults analysis={analysisResult} fileName="Demo Contract" />
+              <AnalysisResults analysis={analysisResult} fileName="Contract Analysis" />
 
-              <div className="mt-8 text-center">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setAnalysisResult(null);
-                    setAnalysisProgress(0);
-                  }}
-                >
-                  Analyze Another Contract
-                </Button>
-              </div>
+              {remainingAnalyses !== null && remainingAnalyses > 0 && (
+                <div className="mt-8 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setAnalysisResult(null);
+                      setAnalysisProgress(0);
+                    }}
+                  >
+                    Analyze Another Contract ({remainingAnalyses} remaining)
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>

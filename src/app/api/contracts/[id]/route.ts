@@ -71,8 +71,9 @@ export async function DELETE(
     }
 
     // Delete contract (cascades to analysis)
+    // Include userId in WHERE to prevent TOCTOU race condition
     await prisma.contract.delete({
-      where: { id },
+      where: { id, userId: session.user.id },
     });
 
     return NextResponse.json({ message: 'Contract deleted' });
