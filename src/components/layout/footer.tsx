@@ -1,7 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { FileText } from 'lucide-react';
 
 export function Footer() {
+  const { data: session } = useSession();
+  const isAuthenticated = !!session;
+
   return (
     <footer className="border-t bg-background">
       <div className="container py-12">
@@ -20,19 +26,29 @@ export function Footer() {
           <div>
             <h4 className="mb-4 font-semibold">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/demo" className="hover:text-foreground">
-                  Try Demo
-                </Link>
-              </li>
+              {isAuthenticated ? (
+                <>
+                  <li>
+                    <Link href="/dashboard" className="hover:text-foreground">
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/contracts" className="hover:text-foreground">
+                      My Contracts
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                <li>
+                  <Link href="/demo" className="hover:text-foreground">
+                    Try Demo
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/pricing" className="hover:text-foreground">
                   Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="hover:text-foreground">
-                  Dashboard
                 </Link>
               </li>
             </ul>

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
@@ -14,6 +17,8 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const { data: session } = useSession();
+  const isAuthenticated = !!session;
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -37,25 +42,49 @@ export default function HomePage() {
                 know exactly what you&apos;re signing.
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <Link href="/signup">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Start Free Analysis
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/demo">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    Try Demo
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link href="/dashboard">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Go to Dashboard
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/dashboard">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                      >
+                        Analyze Contract
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/signup">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Start Free Analysis
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/demo">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                      >
+                        Try Demo
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">
-                No credit card required. 2 free analyses included.
-              </p>
+              {!isAuthenticated && (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  No credit card required. 2 free analyses included.
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -186,8 +215,10 @@ export default function HomePage() {
                     <span>Section-by-section breakdown</span>
                   </li>
                 </ul>
-                <Link href="/signup" className="mt-6 block">
-                  <Button className="w-full">Try For Free</Button>
+                <Link href={isAuthenticated ? "/dashboard" : "/signup"} className="mt-6 block">
+                  <Button className="w-full">
+                    {isAuthenticated ? "Go to Dashboard" : "Try For Free"}
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -241,9 +272,9 @@ export default function HomePage() {
               informed decisions about the contracts they sign.
             </p>
             <div className="flex justify-center gap-4">
-              <Link href="/signup">
+              <Link href={isAuthenticated ? "/dashboard" : "/signup"}>
                 <Button size="lg" variant="secondary">
-                  Get Started Free
+                  {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

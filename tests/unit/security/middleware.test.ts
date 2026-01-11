@@ -27,13 +27,13 @@ describe('Security Middleware', () => {
     });
 
     it('should have rate limit config for analyze endpoint', () => {
-      const analyzeConfig = { windowMs: 60 * 1000, max: 5 };
-      expect(analyzeConfig.max).toBe(5);
+      const analyzeConfig = { windowMs: 60 * 1000, max: 60 };
+      expect(analyzeConfig.max).toBe(60);
     });
 
     it('should have rate limit config for demo endpoint', () => {
-      const demoConfig = { windowMs: 60 * 60 * 1000, max: 2 };
-      expect(demoConfig.max).toBe(2);
+      const demoConfig = { windowMs: 60 * 1000, max: 10 };
+      expect(demoConfig.max).toBe(10);
     });
   });
 

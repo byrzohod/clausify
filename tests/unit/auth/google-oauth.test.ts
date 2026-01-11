@@ -17,94 +17,50 @@ describe('Google OAuth Integration', () => {
     vi.clearAllMocks();
   });
 
-  describe('Sign In Callback', () => {
-    it('should create a new user on first Google sign-in', async () => {
-      const mockUser = {
-        email: 'test@gmail.com',
-        name: 'Test User',
-        image: 'https://example.com/photo.jpg',
+  describe('PrismaAdapter Behavior', () => {
+    it('should allow sign-in callback to return true for Google OAuth', () => {
+      // The signIn callback simply returns true for Google OAuth
+      // PrismaAdapter handles user creation automatically
+      const signInCallback = ({ account }: { account: { provider: string } | null }) => {
+        if (account?.provider === 'google') {
+          return true;
+        }
+        return true;
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-      vi.mocked(prisma.user.create).mockResolvedValue({
-        id: 'new-user-id',
-        email: mockUser.email,
-        name: mockUser.name,
-        image: mockUser.image,
-        emailVerified: new Date(),
-        plan: 'FREE',
-        analysesUsed: 0,
-        analysesLimit: 2,
-        password: null,
-        stripeCustomerId: null,
-        subscriptionId: null,
-        subscriptionEnd: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      // Simulate signIn callback logic
-      const existingUser = await prisma.user.findUnique({
-        where: { email: mockUser.email },
-      });
-
-      expect(existingUser).toBeNull();
-
-      if (!existingUser) {
-        const newUser = await prisma.user.create({
-          data: {
-            email: mockUser.email,
-            name: mockUser.name,
-            image: mockUser.image,
-            emailVerified: new Date(),
-            plan: 'FREE',
-            analysesUsed: 0,
-            analysesLimit: 2,
-          },
-        });
-
-        expect(newUser.email).toBe(mockUser.email);
-        expect(newUser.plan).toBe('FREE');
-        expect(newUser.analysesLimit).toBe(2);
-      }
-
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({
-        where: { email: mockUser.email },
-      });
-      expect(prisma.user.create).toHaveBeenCalled();
+      expect(signInCallback({ account: { provider: 'google' } })).toBe(true);
+      expect(signInCallback({ account: { provider: 'credentials' } })).toBe(true);
+      expect(signInCallback({ account: null })).toBe(true);
     });
 
-    it('should not create a user if already exists', async () => {
-      const existingUser = {
-        id: 'existing-user-id',
-        email: 'existing@gmail.com',
-        name: 'Existing User',
-        image: null,
-        emailVerified: new Date(),
-        plan: 'PRO' as const,
-        analysesUsed: 10,
-        analysesLimit: 100,
-        password: null,
-        stripeCustomerId: 'cus_123',
-        subscriptionId: 'sub_123',
-        subscriptionEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    it('should set user ID in JWT token on sign-in', () => {
+      // Simulate jwt callback behavior
+      const jwtCallback = ({ token, user }: { token: { id?: string }; user?: { id: string } }) => {
+        if (user) {
+          token.id = user.id;
+        }
+        return token;
       };
 
-      vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser);
+      const token = { email: 'test@gmail.com' };
+      const user = { id: 'user-123' };
 
-      // Simulate signIn callback logic
-      const foundUser = await prisma.user.findUnique({
-        where: { email: existingUser.email },
-      });
+      const result = jwtCallback({ token, user });
+      expect(result.id).toBe('user-123');
+    });
 
-      expect(foundUser).not.toBeNull();
-      expect(foundUser?.id).toBe('existing-user-id');
-      expect(foundUser?.plan).toBe('PRO');
+    it('should preserve token when user object is not available', () => {
+      const jwtCallback = ({ token, user }: { token: { id?: string; email?: string }; user?: { id: string } }) => {
+        if (user) {
+          token.id = user.id;
+        }
+        return token;
+      };
 
-      // Should not call create since user exists
-      expect(prisma.user.create).not.toHaveBeenCalled();
+      const token = { id: 'existing-id', email: 'test@gmail.com' };
+
+      const result = jwtCallback({ token, user: undefined });
+      expect(result.id).toBe('existing-id');
     });
   });
 

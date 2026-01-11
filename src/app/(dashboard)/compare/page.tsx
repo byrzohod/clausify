@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Header } from '@/components/layout/header';
 import { DualFileUpload } from '@/components/forms/dual-file-upload';
 import { ComparisonView } from '@/components/comparison/comparison-view';
+import { DiffView } from '@/components/comparison/diff-view';
 import {
   Card,
   CardContent,
@@ -13,9 +14,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeft, Loader2, ArrowLeftRight, SplitSquareHorizontal, GitCompare } from 'lucide-react';
 import Link from 'next/link';
 import type { ComparisonContract } from '@/types';
 
@@ -35,7 +37,7 @@ export default function ComparePage() {
 
 function CompareContent() {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { status: sessionStatus } = useSession();
   const [leftFile, setLeftFile] = useState<File | null>(null);
   const [rightFile, setRightFile] = useState<File | null>(null);
   const [leftContract, setLeftContract] = useState<ComparisonContract | null>(null);
@@ -117,6 +119,8 @@ function CompareContent() {
     );
   }
 
+  const hasContracts = leftContract && rightContract;
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Header />
@@ -130,7 +134,7 @@ function CompareContent() {
           </Link>
           <h1 className="text-3xl font-bold">Compare Contracts</h1>
           <p className="text-muted-foreground">
-            Upload two contracts to view them side by side
+            Upload two contracts to compare them side by side or view differences
           </p>
         </div>
 
@@ -155,13 +159,47 @@ function CompareContent() {
           </CardContent>
         </Card>
 
-        <ComparisonView
-          left={leftContract}
-          right={rightContract}
-          isLoading={isComparing}
-          leftLabel="First Contract"
-          rightLabel="Second Contract"
-        />
+        {hasContracts ? (
+          <Tabs defaultValue="side-by-side" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="side-by-side" className="gap-2">
+                <SplitSquareHorizontal className="h-4 w-4" />
+                Side by Side
+              </TabsTrigger>
+              <TabsTrigger value="diff" className="gap-2">
+                <GitCompare className="h-4 w-4" />
+                Differences
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="side-by-side">
+              <ComparisonView
+                left={leftContract}
+                right={rightContract}
+                isLoading={isComparing}
+                leftLabel="First Contract"
+                rightLabel="Second Contract"
+              />
+            </TabsContent>
+
+            <TabsContent value="diff">
+              <DiffView
+                leftText={leftContract.text}
+                rightText={rightContract.text}
+                leftLabel={leftContract.fileName}
+                rightLabel={rightContract.fileName}
+              />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <ComparisonView
+            left={leftContract}
+            right={rightContract}
+            isLoading={isComparing}
+            leftLabel="First Contract"
+            rightLabel="Second Contract"
+          />
+        )}
       </main>
     </div>
   );
