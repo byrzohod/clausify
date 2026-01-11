@@ -36,6 +36,7 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  ArrowLeftRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { Contract, Analysis } from '@prisma/client';
@@ -208,7 +209,7 @@ function DashboardContent() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-1">
+          <div className="space-y-8 lg:col-span-1">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -225,6 +226,26 @@ function DashboardContent() {
                   isUploading={isUploading}
                   progress={uploadProgress}
                 />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowLeftRight className="h-5 w-5" />
+                  Compare Contracts
+                </CardTitle>
+                <CardDescription>
+                  View two contracts side by side
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/compare">
+                  <Button className="w-full" variant="outline">
+                    <ArrowLeftRight className="mr-2 h-4 w-4" />
+                    Start Comparison
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
