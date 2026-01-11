@@ -35,14 +35,16 @@ None (standard Next.js/TypeScript patterns)
 **Plans**: 1 plan
 
 Plans:
-- [ ] 01-01: Auth logging cleanup + health endpoint
+- [x] 01-01: Auth logging cleanup + health endpoint
 
 ### Phase 2: Redis Rate Limiting
 **Goal**: Production-ready rate limiting that works with multiple instances
 **Depends on**: Phase 1
-**Research**: Likely (Redis integration)
-**Research topics**: Railway Redis addon, ioredis vs redis package, rate limit algorithms
-**Plans**: TBD
+**Research**: Complete (ioredis recommended, sliding window algorithm)
+**Plans**: 1 plan
+
+Plans:
+- [x] 02-01: Redis client + rate limiting migration
 
 Key tasks:
 - Add Railway Redis addon
@@ -112,8 +114,8 @@ Key tasks:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation Fixes | 0/1 | In progress | - |
-| 2. Redis Rate Limiting | 0/TBD | Not started | - |
+| 1. Foundation Fixes | 1/1 | Complete | 2026-01-11 |
+| 2. Redis Rate Limiting | 1/1 | Complete | 2026-01-11 |
 | 3. Comparison UI | 0/TBD | Not started | - |
 | 4. Diff Engine | 0/TBD | Not started | - |
 | 5. Template Matching | 0/TBD | Not started | - |
