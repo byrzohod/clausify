@@ -111,3 +111,17 @@ export interface SessionUser {
   name?: string | null;
   image?: string | null;
 }
+
+// Comparison types
+export interface ComparisonContract {
+  id: string;
+  fileName: string;
+  text: string;
+  uploadedAt: Date;
+}
+
+export interface ComparisonState {
+  left: ComparisonContract | null;
+  right: ComparisonContract | null;
+  isComparing: boolean;
+}
