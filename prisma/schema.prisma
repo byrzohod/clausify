@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Subscription info
+  plan              Plan      @default(FREE)
+  analysesUsed      Int       @default(0)
+  analysesLimit     Int       @default(2)
+  stripeCustomerId  String?   @unique
+  subscriptionId    String?   @unique
+  subscriptionEnd   DateTime?
+
+  // Relations
+  accounts  Account[]
+  sessions  Session[]
+  contracts Contract[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Contract model for uploaded documents
+model Contract {
+  id        String         @id @default(cuid())
+  userId    String
+  fileName  String
+  fileUrl   String
+  fileSize  Int
+  mimeType  String
+  status    ContractStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis Analysis?
+
+  @@index([userId])
+  @@map("contracts")
+}
+
+// Analysis model for AI results
+model Analysis {
+  id         String       @id @default(cuid())
+  contractId String       @unique
+  status     AnalysisStatus @default(PROCESSING)
+
+  // Analysis results stored as JSON
+  summary       String?   @db.Text
+  contractType  ContractType?
+  riskScore     RiskLevel?
+  keyTerms      Json?
+  obligations   Json?
+  redFlags      Json?
+  sections      Json?
+  parties       Json?
+  dates         Json?
+  amounts       Json?
+  rawResponse   String?   @db.Text
+
+  // Processing info
+  processingTime Int?     // in milliseconds
+  tokenCount     Int?
+  error          String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("analyses")
+}
+
+// Demo analysis for unauthenticated users
+model DemoAnalysis {
+  id           String   @id @default(cuid())
+  ipAddress    String
+  fingerprint  String?
+  contractType ContractType
+  analysisData Json
+  createdAt    DateTime @default(now())
+
+  @@index([ipAddress])
+  @@map("demo_analyses")
+}
+
+// Enums
+enum Plan {
+  FREE
+  PAY_PER_USE
+  PRO_MONTHLY
+  PRO_ANNUAL
+  TEAM
+}
+
+enum ContractStatus {
+  PENDING
+  UPLOADING
+  UPLOADED
+  ANALYZING
+  COMPLETED
+  FAILED
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ContractType {
+  NDA
+  EMPLOYMENT
+  LEASE
+  SERVICE
+  FREELANCE
+  SALES
+  PARTNERSHIP
+  LICENSE
+  LOAN
+  OTHER
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
