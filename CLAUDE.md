@@ -791,12 +791,14 @@ Use these skills for common operations:
 
 The app includes a comprehensive security middleware that provides:
 
-1. **Rate Limiting** - Per-user and per-IP rate limiting:
+1. **Rate Limiting** - Per-user and per-IP rate limiting with Redis support:
    - `/api/auth/signup`: 5 per hour per IP
    - `/api/contracts/upload`: 10 per minute per user
-   - `/api/analyze`: 5 per minute per user
-   - `/api/demo`: 2 per hour per user
+   - `/api/analyze`: 60 per minute per user (supports polling)
+   - `/api/demo`: 10 per minute per user
+   - `/api/billing`: 10 per minute per user
    - Default: 100 per minute
+   - Uses Redis for multi-instance deployments (falls back to in-memory)
 
 2. **Security Headers**:
    - `X-Content-Type-Options: nosniff`
@@ -856,10 +858,12 @@ The app is configured for Railway deployment with:
 | `LOCAL_STORAGE_PATH` | `/app/uploads` |
 | `GOOGLE_CLIENT_ID` | (Optional) Google OAuth |
 | `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth |
+| `REDIS_URL` | (Optional) For multi-instance rate limiting |
 
 **Required Services:**
 1. PostgreSQL database
 2. Volume mounted at `/app/uploads`
+3. Redis (optional - for multi-instance rate limiting)
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
