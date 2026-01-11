@@ -1,41 +1,67 @@
-# /status - Check Development Environment Status
+# Clausify Service Status
 
-Check the status of all development services.
+Check the status of all Clausify services.
 
-## Commands to Execute
+## Local Development
 
+### Check Docker Services
 ```bash
-echo "=== Clausify Development Status ==="
-echo ""
-
-# Check PostgreSQL
-echo "📦 PostgreSQL:"
-docker compose ps postgres 2>/dev/null | grep -q "running" && echo "   ✓ Running on localhost:5432" || echo "   ✗ Not running (start with: docker compose up -d)"
-
-# Check Ollama
-echo ""
-echo "🤖 Ollama AI:"
-curl -s http://localhost:11434/api/tags > /dev/null 2>&1 && echo "   ✓ Running on localhost:11434" || echo "   ✗ Not running (start with: ollama serve)"
-
-# Check available models
-if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
-    echo "   Models: $(curl -s http://localhost:11434/api/tags | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | tr '\n' ', ' | sed 's/,$//')"
-fi
-
-# Check Next.js dev server
-echo ""
-echo "🚀 Next.js:"
-curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null | grep -q "200" && echo "   ✓ Running on localhost:3000" || echo "   ✗ Not running (start with: npm run dev)"
-
-echo ""
-echo "=== Environment ==="
-echo "AI Provider: ${AI_PROVIDER:-auto}"
-echo "Storage: ${STORAGE_PROVIDER:-local}"
+docker compose ps
 ```
 
-## Quick Health Check
+### Check Database Connection
+```bash
+docker compose exec -T postgres pg_isready -U clausify
+```
+
+### Check Ollama (if using local AI)
+```bash
+curl -s http://localhost:11434/api/tags | head -c 100 || echo "Ollama not running"
+```
+
+### Check Dev Server
+```bash
+curl -s http://localhost:3000/api/health | jq . || echo "Dev server not running"
+```
+
+## Production (Railway)
+
+### Check Railway Status
+```bash
+railway status
+```
+
+### Check Production Health
+```bash
+# Replace with your production URL
+curl -s https://your-app.railway.app/api/health | jq .
+```
+
+### View Services
+```bash
+railway service list
+```
+
+## Quick Status Summary
+
+Run this to get a quick overview:
 
 ```bash
-# One-liner to check all services
-docker compose ps && curl -s http://localhost:11434/api/tags && curl -s http://localhost:3000 > /dev/null && echo "All services running!"
+echo "=== Docker Services ===" && docker compose ps
+echo ""
+echo "=== Database ===" && docker compose exec -T postgres pg_isready -U clausify 2>/dev/null && echo "PostgreSQL: Running" || echo "PostgreSQL: Not running"
+echo ""
+echo "=== Dev Server ===" && curl -s http://localhost:3000/api/health 2>/dev/null | jq -r .status || echo "Dev server: Not running"
+```
+
+## Health Check Response
+
+The /api/health endpoint returns:
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-11T...",
+  "database": "connected"
+}
 ```

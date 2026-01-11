@@ -14,26 +14,26 @@ describe('Security Middleware', () => {
 
   describe('Rate Limiting Configuration', () => {
     it('should have rate limit config for signup endpoint', () => {
-      // Rate limit config is defined in middleware
-      const signupConfig = { windowMs: 60 * 60 * 1000, max: 5 };
-      expect(signupConfig.max).toBe(5);
+      // Rate limit config is defined in rate-limit.ts
+      const signupConfig = { windowMs: 60 * 60 * 1000, max: 10 };
+      expect(signupConfig.max).toBe(10);
       expect(signupConfig.windowMs).toBe(3600000); // 1 hour
     });
 
     it('should have rate limit config for upload endpoint', () => {
-      const uploadConfig = { windowMs: 60 * 1000, max: 10 };
-      expect(uploadConfig.max).toBe(10);
+      const uploadConfig = { windowMs: 60 * 1000, max: 30 };
+      expect(uploadConfig.max).toBe(30);
       expect(uploadConfig.windowMs).toBe(60000); // 1 minute
     });
 
     it('should have rate limit config for analyze endpoint', () => {
-      const analyzeConfig = { windowMs: 60 * 1000, max: 60 };
-      expect(analyzeConfig.max).toBe(60);
+      const analyzeConfig = { windowMs: 60 * 1000, max: 120 };
+      expect(analyzeConfig.max).toBe(120);
     });
 
     it('should have rate limit config for demo endpoint', () => {
-      const demoConfig = { windowMs: 60 * 1000, max: 10 };
-      expect(demoConfig.max).toBe(10);
+      const demoConfig = { windowMs: 60 * 1000, max: 20 };
+      expect(demoConfig.max).toBe(20);
     });
   });
 

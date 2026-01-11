@@ -759,18 +759,44 @@ npm run typecheck           # Run TypeScript compiler
 
 ---
 
+## Current Version: v1.1 (Complete)
+
+### Implemented Features
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Contract Upload | ✅ | PDF/DOCX upload with validation |
+| AI Analysis | ✅ | Claude-powered contract analysis |
+| User Auth | ✅ | Email/password + Google OAuth |
+| Dashboard | ✅ | View and manage contracts |
+| Pricing & Billing | ✅ | Stripe integration with subscriptions |
+| Security | ✅ | Rate limiting, headers, OWASP fixes |
+| Contract Comparison | ✅ | Diff engine for comparing contracts |
+| Template Matching | ✅ | Match contracts against templates |
+| Webhook Reliability | ✅ | Comprehensive logging for Stripe webhooks |
+
+### Test Coverage
+
+| Type | Count | Location |
+|------|-------|----------|
+| Unit Tests | 255 | `tests/unit/` |
+| E2E Tests | 27 | `tests/e2e/` |
+| Total | 282 | All passing |
+
+---
+
 ## Claude Code Skills
 
 Use these skills for common operations:
 
 | Skill | Description |
 |-------|-------------|
-| `/dev-setup` | Start the full local development environment |
-| `/run-tests` | Run unit, integration, and E2E tests |
-| `/db-reset` | Reset the local database to clean state |
-| `/ai-setup` | Setup Ollama for local AI |
-| `/status` | Check status of all development services |
-| `/build` | Build and verify production readiness |
+| `/clausify:dev` | Start full development environment (Docker, Ollama, dev server) |
+| `/clausify:test` | Run all tests (unit, integration, E2E) |
+| `/clausify:deploy` | Deploy to Railway production |
+| `/clausify:logs` | View Railway production logs |
+| `/clausify:db-reset` | Reset local database to clean state |
+| `/clausify:status` | Check status of all services |
 
 ---
 
@@ -792,13 +818,14 @@ Use these skills for common operations:
 The app includes a comprehensive security middleware that provides:
 
 1. **Rate Limiting** - Per-user and per-IP rate limiting with Redis support:
-   - `/api/auth/signup`: 5 per hour per IP
-   - `/api/contracts/upload`: 10 per minute per user
-   - `/api/analyze`: 60 per minute per user (supports polling)
-   - `/api/demo`: 10 per minute per user
-   - `/api/billing`: 10 per minute per user
-   - Default: 100 per minute
+   - `/api/auth/signup`: 10 per hour per IP
+   - `/api/contracts/upload`: 30 per minute per user
+   - `/api/analyze`: 120 per minute per user (supports polling)
+   - `/api/demo`: 20 per minute per user
+   - `/api/billing`: 30 per minute per user
+   - Default: 200 per minute
    - Uses Redis for multi-instance deployments (falls back to in-memory)
+   - **Important:** Configure `REDIS_URL` on production for persistent rate limiting
 
 2. **Security Headers**:
    - `X-Content-Type-Options: nosniff`

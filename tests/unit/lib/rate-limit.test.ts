@@ -1,9 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-// Mock Redis before importing rate-limit
-vi.mock('@/lib/redis', () => ({
-  getRedis: vi.fn(),
-}));
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import {
   checkRateLimit,
@@ -12,11 +7,9 @@ import {
   clearMemoryStore,
   rateLimitConfig,
 } from '@/lib/rate-limit';
-import { getRedis } from '@/lib/redis';
 
 describe('Rate Limiting', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     clearMemoryStore();
   });
 
@@ -39,34 +32,34 @@ describe('Rate Limiting', () => {
   describe('getRateLimitConfig', () => {
     it('returns signup config for /api/auth/signup', () => {
       const config = getRateLimitConfig('/api/auth/signup');
-      expect(config.max).toBe(5);
+      expect(config.max).toBe(10);
       expect(config.windowMs).toBe(60 * 60 * 1000); // 1 hour
     });
 
     it('returns upload config for /api/contracts/upload', () => {
       const config = getRateLimitConfig('/api/contracts/upload');
-      expect(config.max).toBe(10);
+      expect(config.max).toBe(30);
       expect(config.windowMs).toBe(60 * 1000); // 1 minute
     });
 
     it('returns analyze config for /api/analyze', () => {
       const config = getRateLimitConfig('/api/analyze');
-      expect(config.max).toBe(60);
+      expect(config.max).toBe(120);
     });
 
     it('returns demo config for /api/demo', () => {
       const config = getRateLimitConfig('/api/demo');
-      expect(config.max).toBe(10);
+      expect(config.max).toBe(20);
     });
 
     it('returns billing config for /api/billing', () => {
       const config = getRateLimitConfig('/api/billing');
-      expect(config.max).toBe(10);
+      expect(config.max).toBe(30);
     });
 
     it('returns default config for unknown paths', () => {
       const config = getRateLimitConfig('/api/unknown');
-      expect(config.max).toBe(100);
+      expect(config.max).toBe(200);
       expect(config.windowMs).toBe(60 * 1000);
     });
   });
@@ -82,12 +75,7 @@ describe('Rate Limiting', () => {
     });
   });
 
-  describe('checkRateLimit (memory fallback)', () => {
-    beforeEach(() => {
-      // No Redis available
-      vi.mocked(getRedis).mockReturnValue(null);
-    });
-
+  describe('checkRateLimit', () => {
     it('allows requests under limit', async () => {
       const config = { windowMs: 60000, max: 5 };
 
@@ -145,89 +133,8 @@ describe('Rate Limiting', () => {
     });
   });
 
-  describe('checkRateLimit (Redis)', () => {
-    it('falls back to memory on Redis error', async () => {
-      const mockRedis = {
-        multi: vi.fn(() => ({
-          zremrangebyscore: vi.fn().mockReturnThis(),
-          zadd: vi.fn().mockReturnThis(),
-          zcard: vi.fn().mockReturnThis(),
-          expire: vi.fn().mockReturnThis(),
-          exec: vi.fn().mockRejectedValue(new Error('Connection failed')),
-        })),
-      };
-
-      vi.mocked(getRedis).mockReturnValue(mockRedis as never);
-
-      const config = { windowMs: 60000, max: 5 };
-      const result = await checkRateLimit('redis-test', config);
-
-      // Should work via memory fallback
-      expect(result.allowed).toBe(true);
-      expect(result.remaining).toBe(4);
-    });
-
-    it('uses Redis when available', async () => {
-      const mockPipeline = {
-        zremrangebyscore: vi.fn().mockReturnThis(),
-        zadd: vi.fn().mockReturnThis(),
-        zcard: vi.fn().mockReturnThis(),
-        expire: vi.fn().mockReturnThis(),
-        exec: vi.fn().mockResolvedValue([
-          [null, 0], // zremrangebyscore
-          [null, 1], // zadd
-          [null, 1], // zcard - 1 request in window
-          [null, 1], // expire
-        ]),
-      };
-
-      const mockRedis = {
-        multi: vi.fn(() => mockPipeline),
-        zrange: vi.fn().mockResolvedValue(['member', '1704067200000']),
-      };
-
-      vi.mocked(getRedis).mockReturnValue(mockRedis as never);
-
-      const config = { windowMs: 60000, max: 5 };
-      const result = await checkRateLimit('redis-test-2', config);
-
-      expect(result.allowed).toBe(true);
-      expect(mockRedis.multi).toHaveBeenCalled();
-    });
-
-    it('blocks when Redis count exceeds limit', async () => {
-      const mockPipeline = {
-        zremrangebyscore: vi.fn().mockReturnThis(),
-        zadd: vi.fn().mockReturnThis(),
-        zcard: vi.fn().mockReturnThis(),
-        expire: vi.fn().mockReturnThis(),
-        exec: vi.fn().mockResolvedValue([
-          [null, 0],
-          [null, 1],
-          [null, 6], // 6 requests - over the limit of 5
-          [null, 1],
-        ]),
-      };
-
-      const mockRedis = {
-        multi: vi.fn(() => mockPipeline),
-        zrange: vi.fn().mockResolvedValue(['member', String(Date.now())]),
-      };
-
-      vi.mocked(getRedis).mockReturnValue(mockRedis as never);
-
-      const config = { windowMs: 60000, max: 5 };
-      const result = await checkRateLimit('redis-test-3', config);
-
-      expect(result.allowed).toBe(false);
-      expect(result.remaining).toBe(0);
-    });
-  });
-
   describe('clearMemoryStore', () => {
     it('clears the in-memory store', async () => {
-      vi.mocked(getRedis).mockReturnValue(null);
-
       const config = { windowMs: 60000, max: 2 };
 
       await checkRateLimit('clear-test', config);

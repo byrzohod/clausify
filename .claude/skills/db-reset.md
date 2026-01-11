@@ -1,37 +1,55 @@
-# /db-reset - Reset Local Database
+# Clausify Database Reset
 
-Reset the local PostgreSQL database to a clean state.
+Reset the local development database to a clean state.
 
-## When to Use
+## Warning
 
-- Testing fresh user signup flows
-- After schema changes
-- When data gets corrupted during development
+This will delete ALL data in your local database. Only use for development.
 
-## Commands to Execute
+## Steps
+
+### 1. Stop the Dev Server
+
+Make sure the dev server is stopped first.
+
+### 2. Reset Database
 
 ```bash
-# Stop and remove the database container (keeps data)
-docker compose down
-
-# Remove the data volume for a full reset
-docker volume rm clausify_postgres_data || true
-
-# Start fresh database
+# Drop and recreate database
+docker compose down -v
 docker compose up -d
 
-# Wait for database
+# Wait for PostgreSQL to start
 sleep 3
 
-# Apply schema
-DATABASE_URL="postgresql://clausify:clausify_dev_password@localhost:5432/clausify" npx prisma db push
-
-echo "✓ Database reset complete"
+# Push schema
+npx prisma db push
 ```
 
-## Alternative: Keep Structure, Clear Data
+### 3. Verify
 
-To clear all data but keep the schema:
 ```bash
-DATABASE_URL="postgresql://clausify:clausify_dev_password@localhost:5432/clausify" npx prisma db push --force-reset
+npx prisma studio
 ```
+
+## Alternative: Keep Container, Reset Data
+
+```bash
+# Connect to database and drop all tables
+docker compose exec postgres psql -U clausify -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# Push schema again
+npx prisma db push
+```
+
+## Seed Data (Optional)
+
+If you have seed data:
+
+```bash
+npx prisma db seed
+```
+
+## Production Warning
+
+NEVER run these commands against production. The production DATABASE_URL should only be used through Railway's secure interface.
