@@ -165,7 +165,19 @@ npm run test:coverage
 
 ## Deployment
 
-### Vercel (Recommended)
+### Railway (Recommended)
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/byrzohod/clausify)
+
+1. Click the button above or go to [Railway](https://railway.app)
+2. Connect your GitHub repo
+3. Add PostgreSQL database
+4. Add a volume for `/app/uploads`
+5. Set environment variables (see below)
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+### Vercel
 
 ```bash
 npm i -g vercel
@@ -174,14 +186,16 @@ vercel
 
 ### Environment Variables for Production
 
-Set these in your deployment platform:
-
-- `DATABASE_URL` - Supabase PostgreSQL connection string
-- `NEXTAUTH_SECRET` - Random secret for sessions
-- `NEXTAUTH_URL` - Your production URL
-- `ANTHROPIC_API_KEY` - Claude API key
-- `STRIPE_SECRET_KEY` - Stripe secret key
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe public key
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Yes | Random 32+ char secret |
+| `NEXTAUTH_URL` | Yes | Your production URL |
+| `AI_PROVIDER` | Yes | Set to `anthropic` |
+| `ANTHROPIC_API_KEY` | Yes | Claude API key |
+| `STORAGE_PROVIDER` | Yes | Set to `local` |
+| `STRIPE_SECRET_KEY` | No | For payments |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | No | For payments |
 
 ## Contributing
 
