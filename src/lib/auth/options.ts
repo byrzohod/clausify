@@ -5,6 +5,14 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
+// Development-only logging helper to prevent sensitive data exposure in production
+const isDev = process.env.NODE_ENV === 'development';
+const authLog = (message: string, data?: object) => {
+  if (isDev) {
+    console.log(`[AUTH] ${message}`, data ?? '');
+  }
+};
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
   providers: [
@@ -12,6 +20,12 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      // SECURITY NOTE: allowDangerousEmailAccountLinking is enabled to allow users
+      // who signed up with email/password to later link their Google account.
+      // Risk: If an attacker controls a Google account with the victim's email,
+      // they could gain access. Mitigation: Google verifies email ownership.
+      // TODO: Consider requiring email verification before account linking.
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: 'consent',
@@ -66,52 +80,29 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/login',
   },
+  debug: isDev || process.env.NEXTAUTH_DEBUG === 'true',
   callbacks: {
     async signIn({ user, account }) {
-      // For OAuth providers, create/update user profile
-      if (account?.provider === 'google' && user.email) {
-        try {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email },
-          });
-
-          if (!existingUser) {
-            // Create new user with free plan
-            await prisma.user.create({
-              data: {
-                email: user.email,
-                name: user.name,
-                image: user.image,
-                emailVerified: new Date(),
-                plan: 'FREE',
-                analysesUsed: 0,
-                analysesLimit: 2,
-              },
-            });
-          }
-        } catch (error) {
-          console.error('Error during OAuth sign in:', error);
-          return false;
-        }
+      // PrismaAdapter handles user/account creation automatically
+      if (account?.provider === 'google') {
+        authLog('Google OAuth sign-in', { email: user.email });
       }
       return true;
     },
     async jwt({ token, user, account }) {
+      authLog('JWT callback', {
+        hasUser: !!user,
+        hasAccount: !!account,
+        provider: account?.provider,
+      });
+      // user object is available on initial sign-in
       if (user) {
         token.id = user.id;
-      }
-      // For OAuth, fetch the user ID from database
-      if (account?.provider === 'google' && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
-        }
       }
       return token;
     },
     async session({ session, token }) {
+      authLog('Session callback', { hasToken: !!token.id });
       if (session.user) {
         session.user.id = token.id as string;
       }
@@ -120,11 +111,34 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user, account }) {
-      // Log successful sign-ins for security monitoring
-      console.log(`[AUTH] User signed in: ${user.email} via ${account?.provider || 'credentials'}`);
+      authLog('User signed in', {
+        provider: account?.provider || 'credentials',
+      });
     },
-    async signOut({ token }) {
-      console.log(`[AUTH] User signed out: ${token.email}`);
+    async signOut() {
+      authLog('User signed out');
+    },
+    async createUser({ user }) {
+      authLog('User created', { email: user.email });
+    },
+    async linkAccount({ account }) {
+      authLog('Account linked', { provider: account.provider });
+    },
+  },
+  logger: {
+    error(code, ...message) {
+      // Always log errors in production for debugging
+      console.error('[AUTH ERROR]', code, ...message);
+    },
+    warn(code, ...message) {
+      if (isDev) {
+        console.warn('[AUTH WARN]', code, ...message);
+      }
+    },
+    debug(code, ...message) {
+      if (isDev) {
+        console.log('[AUTH DEBUG]', code, ...message);
+      }
     },
   },
 };
