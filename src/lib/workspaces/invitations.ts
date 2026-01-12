@@ -282,7 +282,7 @@ export async function listWorkspaceInvitations(workspaceId: string): Promise<Inv
     orderBy: { createdAt: 'desc' },
   });
 
-  const inviterIds = [...new Set(invitations.map((i) => i.invitedBy))];
+  const inviterIds = Array.from(new Set(invitations.map((i) => i.invitedBy)));
   const inviters = await prisma.user.findMany({
     where: { id: { in: inviterIds } },
     select: { id: true, name: true, email: true },

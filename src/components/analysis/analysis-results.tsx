@@ -56,7 +56,7 @@ export function AnalysisResults({
   const handleTabChange = useMemo(
     () => (value: string) => {
       setActiveTab(value);
-      setVisitedTabs((prev) => new Set([...prev, value]));
+      setVisitedTabs((prev) => new Set([...Array.from(prev), value]));
     },
     []
   );

@@ -46,13 +46,13 @@ export async function getCachedAnalysis(
       summary: cachedAnalysis.summary || '',
       contractType: cachedAnalysis.contractType || 'OTHER',
       riskScore: cachedAnalysis.riskScore || 'MEDIUM',
-      keyTerms: (cachedAnalysis.keyTerms as AnalysisResult['keyTerms']) || [],
-      obligations: (cachedAnalysis.obligations as AnalysisResult['obligations']) || [],
-      redFlags: (cachedAnalysis.redFlags as AnalysisResult['redFlags']) || [],
-      sections: (cachedAnalysis.sections as AnalysisResult['sections']) || [],
-      parties: (cachedAnalysis.parties as AnalysisResult['parties']) || [],
-      dates: (cachedAnalysis.dates as AnalysisResult['dates']) || [],
-      amounts: (cachedAnalysis.amounts as AnalysisResult['amounts']) || [],
+      keyTerms: (cachedAnalysis.keyTerms as unknown as AnalysisResult['keyTerms']) || [],
+      obligations: (cachedAnalysis.obligations as unknown as AnalysisResult['obligations']) || [],
+      redFlags: (cachedAnalysis.redFlags as unknown as AnalysisResult['redFlags']) || [],
+      sections: (cachedAnalysis.sections as unknown as AnalysisResult['sections']) || [],
+      parties: (cachedAnalysis.parties as unknown as AnalysisResult['parties']) || [],
+      dates: (cachedAnalysis.dates as unknown as AnalysisResult['dates']) || [],
+      amounts: (cachedAnalysis.amounts as unknown as AnalysisResult['amounts']) || [],
     };
   } catch (error) {
     console.error('[AnalysisCache] Error checking cache:', error);

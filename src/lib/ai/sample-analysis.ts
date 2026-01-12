@@ -62,7 +62,7 @@ export const SAMPLE_NDA_ANALYSIS: AnalysisResult = {
       party: 'Both Parties',
       description: 'Must provide written notice of any required legal disclosure',
       deadline: 'Promptly upon receiving legal process',
-      consequence: null,
+      consequence: undefined,
     },
   ],
   redFlags: [
@@ -82,7 +82,7 @@ export const SAMPLE_NDA_ANALYSIS: AnalysisResult = {
       severity: 'medium',
       suggestion:
         'Consider negotiating for a shorter confidentiality period (2-3 years) unless there\'s a specific reason for the extended term.',
-      clause: null,
+      clause: undefined,
     },
     {
       title: 'Vague "Reasonable Care" Standard',
@@ -91,7 +91,7 @@ export const SAMPLE_NDA_ANALYSIS: AnalysisResult = {
       severity: 'low',
       suggestion:
         'Request that "reasonable care" be defined as "the same care you use for your own confidential information" for clearer expectations.',
-      clause: null,
+      clause: undefined,
     },
   ],
   sections: [
@@ -243,7 +243,7 @@ export const SAMPLE_EMPLOYMENT_ANALYSIS: AnalysisResult = {
       severity: 'medium',
       suggestion:
         'Understand that arbitration typically favors employers. Consider negotiating for the right to opt out.',
-      clause: null,
+      clause: undefined,
     },
     {
       title: 'Non-Compete Enforceability',
@@ -251,7 +251,7 @@ export const SAMPLE_EMPLOYMENT_ANALYSIS: AnalysisResult = {
         '12-month non-compete may be unenforceable in your state (e.g., California), but the clause is still present.',
       severity: 'medium',
       suggestion: 'Verify non-compete enforceability in your state. Request removal if unenforceable.',
-      clause: null,
+      clause: undefined,
     },
   ],
   sections: [

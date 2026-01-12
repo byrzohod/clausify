@@ -160,7 +160,7 @@ describe('notifySlackAnalysisComplete', () => {
     vi.mocked(global.fetch).mockResolvedValue({ ok: true } as never);
 
     const { notifySlackAnalysisComplete } = await import(
-      '@/app/api/integrations/slack/route'
+      '@/lib/integrations/slack'
     );
     await notifySlackAnalysisComplete(
       'user-1',
@@ -185,7 +185,7 @@ describe('notifySlackAnalysisComplete', () => {
     } as never);
 
     const { notifySlackAnalysisComplete } = await import(
-      '@/app/api/integrations/slack/route'
+      '@/lib/integrations/slack'
     );
     await notifySlackAnalysisComplete(
       'user-1',
@@ -204,7 +204,7 @@ describe('notifySlackAnalysisComplete', () => {
     } as never);
 
     const { notifySlackAnalysisComplete } = await import(
-      '@/app/api/integrations/slack/route'
+      '@/lib/integrations/slack'
     );
     await notifySlackAnalysisComplete(
       'user-1',
@@ -224,7 +224,7 @@ describe('notifySlackAnalysisComplete', () => {
     vi.mocked(global.fetch).mockResolvedValue({ ok: true } as never);
 
     const { notifySlackAnalysisComplete } = await import(
-      '@/app/api/integrations/slack/route'
+      '@/lib/integrations/slack'
     );
     await notifySlackAnalysisComplete(
       'user-1',

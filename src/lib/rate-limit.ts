@@ -21,7 +21,7 @@ function cleanupExpiredEntries(): void {
   }
 
   let cleaned = 0;
-  for (const [key, record] of memoryStore.entries()) {
+  for (const [key, record] of Array.from(memoryStore.entries())) {
     if (now > record.resetTime) {
       memoryStore.delete(key);
       cleaned++;
