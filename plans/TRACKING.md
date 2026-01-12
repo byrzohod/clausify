@@ -7,13 +7,13 @@
 ## Quick Stats
 
 ```
-Total Tasks:    34
-Completed:      34
+Total Tasks:    41
+Completed:      41
 In Progress:    0
 Blocked:        0
 ```
 
-*Last Updated: 2026-01-11*
+*Last Updated: 2026-01-12*
 
 ---
 
@@ -85,6 +85,14 @@ All v1.1 tasks have been completed. See "Done" section below.
 | T-032 | Add unit tests for API routes | 2026-01-11 | +31 API tests added |
 | T-033 | Add component tests | 2026-01-11 | +50 component tests added |
 | T-034 | Complete test coverage target | 2026-01-11 | 344 tests, all passing |
+| **v1.2 - Growth Features** | | | |
+| T-035 | Email notifications (Resend) | 2026-01-12 | Email client + templates |
+| T-036 | OCR scanned documents | 2026-01-12 | Scan detection + placeholder |
+| T-037 | API key system | 2026-01-12 | Full API access with keys |
+| T-038 | Team workspaces | 2026-01-12 | RBAC with invitations |
+| T-039 | Browser extension | 2026-01-12 | Chrome extension v1.0 |
+| T-040 | Production deploy config | 2026-01-12 | Railway configuration |
+| T-041 | Tests for v1.2 features | 2026-01-12 | 554 tests total, all passing |
 
 ---
 
@@ -115,10 +123,10 @@ All v1.1 tasks have been completed. See "Done" section below.
 
 | ID | Description | Priority | Effort | Notes |
 |----|-------------|----------|--------|-------|
-| TD-001 | Add OCR support for scanned PDFs | P3 | L | Future feature |
+| TD-001 | ~~Add OCR support for scanned PDFs~~ | ~~P3~~ | ~~L~~ | DONE in v1.2 |
 | TD-002 | ~~Add Google OAuth~~ | ~~P3~~ | ~~S~~ | DONE in v1.0 |
 | TD-003 | ~~Implement contract comparison~~ | ~~P3~~ | ~~L~~ | DONE in v1.1 |
-| TD-004 | ~~Increase test coverage to 80%+~~ | ~~P1~~ | ~~L~~ | DONE - 344 tests |
+| TD-004 | ~~Increase test coverage to 80%+~~ | ~~P1~~ | ~~L~~ | DONE - 554 tests |
 
 ---
 
@@ -126,11 +134,11 @@ All v1.1 tasks have been completed. See "Done" section below.
 
 | Test Type | Files | Tests | Status |
 |-----------|-------|-------|--------|
-| Unit Tests | 35 | 344 | All Passing |
+| Unit Tests | 53 | 554 | All Passing |
 | Integration Tests | 2 | 15 | All Passing |
 | E2E Tests | 4 | 27 | Configured |
 
-**Target:** 300+ tests - ACHIEVED (344 tests passing)
+**Target:** 300+ tests - ACHIEVED (554 tests passing)
 
 ---
 
@@ -141,13 +149,18 @@ All v1.1 tasks have been completed. See "Done" section below.
 | TypeScript | Passing |
 | ESLint | No warnings |
 | Build | Successful |
-| Unit Tests | 344/344 passing |
+| Unit Tests | 554/554 passing |
 | Integration Tests | All passing |
 | E2E Tests | 27 tests configured |
 
 ---
 
 ## Sprint History
+
+### Sprint v1.2 - Growth Features
+- **Status:** DONE
+- **Goal:** Email, OCR, API access, Team workspaces, Browser extension
+- **Outcome:** All features implemented, 554 tests passing
 
 ### Sprint v1.1 - Comparison + Stability
 - **Status:** DONE

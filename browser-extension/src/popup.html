@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clausify</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <img src="../icons/icon32.png" alt="Clausify" width="24" height="24">
+        <span>Clausify</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Not authenticated view -->
+      <div id="auth-view" class="view">
+        <h2>Connect to Clausify</h2>
+        <p class="description">
+          Enter your API key to analyze contracts directly from any webpage.
+        </p>
+
+        <div class="form-group">
+          <label for="api-key">API Key</label>
+          <input type="password" id="api-key" placeholder="clsf_xxxxxxxx">
+        </div>
+
+        <button id="connect-btn" class="btn btn-primary">Connect</button>
+
+        <p class="hint">
+          Get your API key from
+          <a href="https://clausify.app/settings/api" target="_blank">clausify.app/settings/api</a>
+        </p>
+      </div>
+
+      <!-- Authenticated view -->
+      <div id="dashboard-view" class="view hidden">
+        <div class="status-card">
+          <div class="status-icon success">✓</div>
+          <div class="status-text">
+            <strong>Connected</strong>
+            <span>Ready to analyze contracts</span>
+          </div>
+        </div>
+
+        <div class="instructions">
+          <h3>How to use</h3>
+          <ol>
+            <li>Right-click any PDF or DOCX link</li>
+            <li>Select "Analyze with Clausify"</li>
+            <li>View your analysis results</li>
+          </ol>
+        </div>
+
+        <div class="actions">
+          <a href="https://clausify.app/dashboard" target="_blank" class="btn btn-secondary">
+            Open Dashboard
+          </a>
+          <button id="logout-btn" class="btn btn-outline">
+            Disconnect
+          </button>
+        </div>
+      </div>
+
+      <!-- Error view -->
+      <div id="error-view" class="view hidden">
+        <div class="status-card error">
+          <div class="status-icon error">✕</div>
+          <div class="status-text">
+            <strong>Connection Error</strong>
+            <span id="error-message">Unable to connect</span>
+          </div>
+        </div>
+        <button id="retry-btn" class="btn btn-primary">Try Again</button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <a href="https://clausify.app" target="_blank">clausify.app</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -151,7 +151,7 @@ Phase 5: Test Coverage    [####################]  COMPLETE
 ## Phase 4: Growth Features
 
 **Goal:** Add features that increase retention and expand market.
-**Status:** COMPLETE (v1.1)
+**Status:** COMPLETE (v1.2)
 
 | Feature | Priority | Effort | Impact | Status |
 |---------|----------|--------|--------|--------|
@@ -160,11 +160,11 @@ Phase 5: Test Coverage    [####################]  COMPLETE
 | Contract comparison | Medium | High | High | `DONE` (v1.1) |
 | Template matching | Medium | Medium | High | `DONE` (v1.1) |
 | Redis rate limiting | High | Medium | High | `DONE` (v1.1) |
-| Email notifications | Medium | Low | Low | `TODO` |
-| OCR for scanned docs | Medium | Medium | Medium | `TODO` |
-| Browser extension | Low | High | High | `TODO` |
-| API access | Low | Medium | Medium | `TODO` |
-| Team workspaces | Low | High | High | `TODO` |
+| Email notifications | Medium | Low | Low | `DONE` (v1.2) |
+| OCR for scanned docs | Medium | Medium | Medium | `DONE` (v1.2) |
+| Browser extension | Low | High | High | `DONE` (v1.2) |
+| API access | Low | Medium | Medium | `DONE` (v1.2) |
+| Team workspaces | Low | High | High | `DONE` (v1.2) |
 
 ---
 
@@ -181,7 +181,7 @@ See: `.planning/TEST-PLAN.md` for detailed plan
 | Component tests | P2 | Done |
 | Integration tests | P2 | Done |
 | E2E user journeys | P2 | Done |
-| Target: 300+ tests, 80%+ coverage | - | ACHIEVED (344 tests) |
+| Target: 300+ tests, 80%+ coverage | - | ACHIEVED (554 tests) |
 
 ---
 
