@@ -1,67 +1,52 @@
-# Clausify Service Status
+# /status - Check Service Status
 
 Check the status of all Clausify services.
 
-## Local Development
+## Quick Status
 
-### Check Docker Services
+```bash
+echo "=== Docker ===" && docker compose ps
+echo ""
+echo "=== Database ===" && docker compose exec -T postgres pg_isready -U clausify 2>/dev/null && echo "OK" || echo "NOT RUNNING"
+echo ""
+echo "=== Dev Server ===" && curl -s http://localhost:3000/api/health 2>/dev/null | jq -r '.status // "NOT RUNNING"' || echo "NOT RUNNING"
+```
+
+## Individual Checks
+
+### Docker Services
 ```bash
 docker compose ps
 ```
 
-### Check Database Connection
+### Database Connection
 ```bash
 docker compose exec -T postgres pg_isready -U clausify
 ```
 
-### Check Ollama (if using local AI)
+### Dev Server Health
 ```bash
-curl -s http://localhost:11434/api/tags | head -c 100 || echo "Ollama not running"
+curl -s http://localhost:3000/api/health | jq .
 ```
 
-### Check Dev Server
+### Ollama (Local AI)
 ```bash
-curl -s http://localhost:3000/api/health | jq . || echo "Dev server not running"
+curl -s http://localhost:11434/api/tags 2>/dev/null && echo "Ollama running" || echo "Ollama not running"
 ```
 
-## Production (Railway)
+## Production Status
 
-### Check Railway Status
 ```bash
 railway status
+railway logs --tail 10
 ```
 
-### Check Production Health
-```bash
-# Replace with your production URL
-curl -s https://your-app.railway.app/api/health | jq .
-```
-
-### View Services
-```bash
-railway service list
-```
-
-## Quick Status Summary
-
-Run this to get a quick overview:
-
-```bash
-echo "=== Docker Services ===" && docker compose ps
-echo ""
-echo "=== Database ===" && docker compose exec -T postgres pg_isready -U clausify 2>/dev/null && echo "PostgreSQL: Running" || echo "PostgreSQL: Not running"
-echo ""
-echo "=== Dev Server ===" && curl -s http://localhost:3000/api/health 2>/dev/null | jq -r .status || echo "Dev server: Not running"
-```
-
-## Health Check Response
-
-The /api/health endpoint returns:
+## Expected Health Response
 
 ```json
 {
   "status": "healthy",
-  "timestamp": "2026-01-11T...",
+  "timestamp": "2026-01-13T...",
   "database": "connected"
 }
 ```

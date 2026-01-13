@@ -1,50 +1,50 @@
-# Clausify Logs
+# /logs - View Production Logs
 
-View production logs from Railway.
+View Railway production logs for debugging.
 
-## View Live Logs
+## Commands
 
+### Live Logs
 ```bash
 railway logs
 ```
 
-## View Recent Logs
-
+### Recent Logs (Last 100 Lines)
 ```bash
 railway logs --tail 100
 ```
 
-## Filter Logs
-
-Look for specific patterns:
-
+### Filter by Type
 ```bash
+# Errors only
 railway logs | grep -i error
-railway logs | grep -i webhook
-railway logs | grep -i "rate limit"
+
+# Webhooks
+railway logs | grep "\[Webhook\]"
+
+# Rate limiting
+railway logs | grep "\[RateLimit\]"
+
+# Auth issues
+railway logs | grep "\[Auth\]"
 ```
 
 ## Log Prefixes
 
-The app uses consistent log prefixes:
-
 | Prefix | Source |
 |--------|--------|
 | `[Webhook]` | Stripe webhook handler |
-| `[RateLimit]` | Rate limiting middleware |
-| `[HEALTH]` | Health check endpoint |
+| `[RateLimit]` | Rate limiting |
+| `[HEALTH]` | Health check |
 | `[Auth]` | Authentication |
+| `[API]` | API routes |
+| `[Email]` | Email service |
 
-## Common Issues
+## Troubleshooting
 
-### Rate Limiting
-Look for: `[RateLimit] REDIS_URL not configured`
-Fix: Add Redis service to Railway
-
-### Webhook Failures
-Look for: `[Webhook] signature verification failed`
-Fix: Verify `STRIPE_WEBHOOK_SECRET` is correct
-
-### Database Issues
-Look for: `PrismaClientInitializationError`
-Fix: Check `DATABASE_URL` and database service status
+| Issue | Look For |
+|-------|----------|
+| Payment issues | `[Webhook] signature` |
+| Rate limit hits | `[RateLimit] blocked` |
+| DB errors | `PrismaClient` |
+| Auth failures | `[Auth] error` |

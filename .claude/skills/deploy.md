@@ -1,68 +1,57 @@
-# Clausify Deployment
+# /deploy - Deploy to Railway
 
 Deploy Clausify to Railway production.
 
-## Prerequisites
-
-1. Railway CLI installed and logged in
-2. Project linked to Railway
-
-## Check Railway Status
+## Pre-Deploy Checklist
 
 ```bash
-railway status
-```
-
-## Deploy Steps
-
-### 1. Run Tests First
-```bash
+# Run tests
 npm test -- --run
-```
 
-### 2. Build Locally (Optional Verification)
-```bash
+# Build locally
 npm run build
 ```
 
-### 3. Deploy to Railway
+## Deploy
 
-The app auto-deploys when you push to main. For manual deployment:
+### Option 1: Push to Main (Auto-Deploy)
+```bash
+git push origin main
+```
 
+### Option 2: Manual Deploy
 ```bash
 railway up
 ```
 
-Or trigger a redeploy:
-
+### Option 3: Redeploy Current
 ```bash
 railway redeploy -y
 ```
 
-## Environment Variables
-
-Make sure these are set on Railway:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `NEXTAUTH_SECRET` | Yes | Auth secret key |
-| `NEXTAUTH_URL` | Yes | Production URL |
-| `AI_PROVIDER` | Yes | `anthropic` |
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key |
-| `STORAGE_PROVIDER` | Yes | `local` |
-| `LOCAL_STORAGE_PATH` | Yes | `/app/uploads` |
-| `REDIS_URL` | Optional | For rate limiting |
-
-## Check Deploy Status
+## Verify Deployment
 
 ```bash
+# View logs
 railway logs
+
+# Check health
+curl -s https://your-app.railway.app/api/health | jq .
 ```
 
-## Rollback
+## Required Environment Variables
 
-If needed, rollback to previous deployment:
+| Variable | Description |
+|----------|-------------|
+| DATABASE_URL | PostgreSQL connection |
+| NEXTAUTH_SECRET | `openssl rand -base64 32` |
+| NEXTAUTH_URL | Production URL |
+| AI_PROVIDER | `anthropic` |
+| ANTHROPIC_API_KEY | Anthropic API key |
+| STORAGE_PROVIDER | `local` |
+| LOCAL_STORAGE_PATH | `/app/uploads` |
+
+## Rollback
 
 ```bash
 railway rollback

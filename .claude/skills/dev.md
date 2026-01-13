@@ -1,55 +1,64 @@
-# Clausify Development Environment
+# /dev - Start Development Environment
 
-Start the full local development environment for Clausify.
+Start the local development environment for Clausify.
 
-## What This Does
+## Quick Start
 
-1. Starts PostgreSQL via Docker
-2. Verifies database connection
-3. Optionally starts Ollama for local AI
-4. Starts the Next.js development server
-
-## Steps
-
-1. Check if Docker is running:
 ```bash
-docker info > /dev/null 2>&1 || echo "Docker is not running"
+# Start database + dev server
+docker compose up -d && sleep 2 && npm run dev
 ```
 
-2. Start PostgreSQL:
+## Full Setup (First Time)
+
 ```bash
+# 1. Start PostgreSQL
 docker compose up -d
-```
 
-3. Wait for database to be ready:
-```bash
+# 2. Wait for database
 sleep 3
-docker compose exec -T postgres pg_isready -U clausify
-```
 
-4. Push database schema if needed:
-```bash
+# 3. Apply schema
 npx prisma db push
-```
 
-5. Start the development server:
-```bash
+# 4. Start dev server
 npm run dev
 ```
 
-## Optional: Start Ollama
+## Access Points
 
-If the user wants to use local AI instead of Anthropic:
+| Service | URL |
+|---------|-----|
+| App | http://localhost:3000 |
+| Prisma Studio | `npx prisma studio` (port 5555) |
+| Health Check | http://localhost:3000/api/health |
+
+## Optional: Local AI (Ollama)
+
+For free local AI instead of Anthropic:
 
 ```bash
-# Start Ollama in background
-ollama serve &
+# Start Ollama (separate terminal)
+ollama serve
 
-# Pull model if needed
+# Pull model (first time)
 ollama pull llama3.2
 ```
 
-## Access
+Set in `.env.local`:
+```
+AI_PROVIDER=ollama
+```
 
-- App: http://localhost:3000
-- Prisma Studio: `npx prisma studio` (opens on port 5555)
+## Verify Services
+
+```bash
+# Check Docker
+docker compose ps
+
+# Check database
+docker compose exec -T postgres pg_isready -U clausify
+
+# Check dev server
+curl -s http://localhost:3000/api/health | jq .
+```

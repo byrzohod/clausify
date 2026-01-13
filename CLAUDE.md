@@ -90,68 +90,50 @@
    Stripe → /api/webhooks/stripe → Update user plan in DB
 ```
 
-### Directory Structure (Planned)
+### Directory Structure
 
 ```
 clausify/
 ├── src/
 │   ├── app/                      # Next.js App Router
-│   │   ├── (auth)/               # Auth route group
-│   │   │   ├── login/
-│   │   │   ├── signup/
-│   │   │   └── forgot-password/
-│   │   ├── (dashboard)/          # Protected route group
-│   │   │   ├── dashboard/
-│   │   │   ├── contracts/
-│   │   │   │   └── [id]/
-│   │   │   └── settings/
-│   │   ├── (marketing)/          # Public pages
-│   │   │   ├── page.tsx          # Landing page
-│   │   │   ├── pricing/
-│   │   │   └── demo/
-│   │   ├── api/                  # API routes
-│   │   │   ├── auth/
-│   │   │   ├── contracts/
-│   │   │   ├── analyze/
-│   │   │   ├── billing/
-│   │   │   └── webhooks/
-│   │   ├── layout.tsx
-│   │   └── globals.css
+│   │   ├── (auth)/               # Auth pages (login, signup)
+│   │   ├── (dashboard)/          # Protected pages
+│   │   │   ├── dashboard/        # Main dashboard
+│   │   │   ├── contracts/[id]/   # Contract details
+│   │   │   ├── compare/          # Contract comparison
+│   │   │   └── settings/         # User settings
+│   │   ├── api/                  # API routes (20+ endpoints)
+│   │   │   ├── analyze/          # AI analysis
+│   │   │   ├── api-keys/         # API key management
+│   │   │   ├── billing/          # Stripe integration
+│   │   │   ├── contracts/        # Contract CRUD
+│   │   │   ├── templates/        # Template matching
+│   │   │   ├── workspaces/       # Team workspaces
+│   │   │   └── webhooks/         # Stripe webhooks
+│   │   └── (marketing)/          # Public pages
 │   │
 │   ├── components/               # React components
-│   │   ├── ui/                   # shadcn/ui components
-│   │   ├── forms/                # Form components
-│   │   ├── analysis/             # Analysis display components
-│   │   ├── layout/               # Layout components
-│   │   └── common/               # Shared components
+│   │   ├── ui/                   # shadcn/ui base components
+│   │   ├── analysis/             # Analysis display
+│   │   ├── comparison/           # Diff views
+│   │   └── forms/                # Upload, auth forms
 │   │
-│   ├── lib/                      # Utility libraries
-│   │   ├── supabase/             # Supabase client & helpers
-│   │   ├── ai/                   # Claude API integration
-│   │   ├── parsers/              # Document parsing
-│   │   ├── stripe/               # Stripe integration
-│   │   ├── auth/                 # Auth utilities
-│   │   └── utils/                # General utilities
+│   ├── lib/                      # Core libraries
+│   │   ├── ai/                   # Claude + Ollama integration
+│   │   ├── auth/                 # NextAuth utilities
+│   │   ├── email/                # Resend email client
+│   │   ├── ocr/                  # Scanned doc detection
+│   │   ├── parsers/              # PDF/DOCX parsing
+│   │   ├── stripe/               # Payment utilities
+│   │   └── workspaces/           # Team RBAC logic
 │   │
-│   ├── hooks/                    # Custom React hooks
-│   ├── types/                    # TypeScript types
-│   ├── constants/                # App constants
-│   └── config/                   # Configuration
+│   └── middleware.ts             # Security + rate limiting
 │
-├── prisma/
-│   ├── schema.prisma             # Database schema
-│   └── migrations/               # DB migrations
-│
-├── tests/                        # Test files
-│   ├── unit/                     # Unit tests
-│   ├── integration/              # Integration tests
-│   └── e2e/                      # End-to-end tests
-│
-├── public/                       # Static assets
-├── plans/                        # Planning documents
-├── PLANNING.md                   # Main planning doc
-├── CLAUDE.md                     # This file
-└── package.json
+├── browser-extension/            # Chrome extension
+├── prisma/schema.prisma          # Database schema
+├── tests/unit/                   # 554 unit tests
+├── tests/e2e/                    # 27 E2E tests
+└── plans/                        # Planning docs
 ```
 
 ---
@@ -164,18 +146,18 @@ clausify/
 | Language | TypeScript | Type safety |
 | Styling | Tailwind CSS | Utility-first CSS |
 | Components | shadcn/ui | Pre-built accessible components |
-| Database | PostgreSQL (Supabase) | Primary data store |
+| Database | PostgreSQL | Primary data store |
 | ORM | Prisma | Database access |
-| File Storage | Supabase Storage | Contract file storage |
-| Authentication | NextAuth.js or Clerk | User authentication |
-| AI | Claude API (Sonnet) | Contract analysis |
+| File Storage | Local / Supabase | Contract file storage |
+| Authentication | NextAuth.js | User auth (Email + Google OAuth) |
+| AI | Claude API / Ollama | Contract analysis |
 | Payments | Stripe | Subscriptions & payments |
-| Hosting | Vercel | Deployment & hosting |
+| Email | Resend | Transactional emails |
+| Rate Limiting | Redis / In-memory | API protection |
+| Hosting | Railway | Deployment & hosting |
 | PDF Parsing | pdf-parse | Extract text from PDFs |
 | DOCX Parsing | mammoth.js | Extract text from DOCX |
-| Validation | Zod | Schema validation |
-| State | Zustand | Client state management |
-| Forms | React Hook Form | Form handling |
+| Testing | Vitest + Playwright | Unit & E2E tests |
 
 ---
 
@@ -759,10 +741,11 @@ npm run typecheck           # Run TypeScript compiler
 
 ---
 
-## Current Version: v1.1 (Complete)
+## Current Version: v1.2 (Complete)
 
 ### Implemented Features
 
+#### Core (v1.0)
 | Feature | Status | Description |
 |---------|--------|-------------|
 | Contract Upload | ✅ | PDF/DOCX upload with validation |
@@ -770,44 +753,70 @@ npm run typecheck           # Run TypeScript compiler
 | User Auth | ✅ | Email/password + Google OAuth |
 | Dashboard | ✅ | View and manage contracts |
 | Pricing & Billing | ✅ | Stripe integration with subscriptions |
-| Security | ✅ | Rate limiting, headers, OWASP fixes |
-| Contract Comparison | ✅ | Diff engine for comparing contracts |
-| Template Matching | ✅ | Match contracts against templates |
-| Webhook Reliability | ✅ | Comprehensive logging for Stripe webhooks |
+| PDF Export | ✅ | Export analysis as PDF |
+| Demo Mode | ✅ | Try before signing up |
+
+#### Comparison & Templates (v1.1)
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Contract Comparison | ✅ | Side-by-side diff view |
+| Template Matching | ✅ | Save and compare against templates |
+| Redis Rate Limiting | ✅ | Multi-instance scaling |
+| Webhook Reliability | ✅ | Comprehensive logging |
+
+#### Growth Features (v1.2)
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Email Notifications | ✅ | Resend integration for alerts |
+| OCR Detection | ✅ | Scanned document detection |
+| API Access | ✅ | API keys for developers |
+| Team Workspaces | ✅ | RBAC with invitations |
+| Browser Extension | ✅ | Chrome extension v1.0 |
 
 ### Test Coverage
 
 | Type | Count | Location |
 |------|-------|----------|
-| Unit Tests | 255 | `tests/unit/` |
+| Unit Tests | 554 | `tests/unit/` |
 | E2E Tests | 27 | `tests/e2e/` |
-| Total | 282 | All passing |
+| **Total** | **554** | **All passing** |
 
 ---
 
 ## Claude Code Skills
 
-Use these skills for common operations:
+Use these slash commands for common operations:
 
-| Skill | Description |
-|-------|-------------|
-| `/clausify:dev` | Start full development environment (Docker, Ollama, dev server) |
-| `/clausify:test` | Run all tests (unit, integration, E2E) |
-| `/clausify:deploy` | Deploy to Railway production |
-| `/clausify:logs` | View Railway production logs |
-| `/clausify:db-reset` | Reset local database to clean state |
-| `/clausify:status` | Check status of all services |
+### Development
+| Command | Description |
+|---------|-------------|
+| `/dev` | Start dev environment (Docker + dev server) |
+| `/status` | Check all services status |
+| `/db-reset` | Reset local database |
+| `/db-studio` | Open Prisma Studio |
+
+### Testing & Quality
+| Command | Description |
+|---------|-------------|
+| `/test` | Run all 554 tests |
+| `/lint` | Run ESLint |
+| `/typecheck` | Run TypeScript check |
+| `/build` | Build and verify production ready |
+
+### Deployment
+| Command | Description |
+|---------|-------------|
+| `/deploy` | Deploy to Railway |
+| `/logs` | View Railway production logs |
 
 ---
 
 ## References
 
-- [Main Planning Doc](./PLANNING.md) - Full project specification
-- [Features](./plans/FEATURES.md) - Detailed feature specs
+- [Features](./plans/FEATURES.md) - Feature specifications (v1.0-v1.2)
 - [Roadmap](./plans/ROADMAP.md) - Development timeline
 - [Tracking](./plans/TRACKING.md) - Task management
-- [Investigations](./plans/INVESTIGATIONS.md) - Open research items
-- [Decisions](./plans/DECISIONS.md) - Architecture decisions
+- [Deployment](./DEPLOYMENT.md) - Railway deployment guide
 
 ---
 

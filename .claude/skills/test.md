@@ -1,58 +1,68 @@
-# Clausify Test Suite
+# /test - Run Test Suite
 
 Run the complete test suite for Clausify.
 
-## Test Types
+## Quick Run
 
-1. **Unit Tests** (255 tests) - Test individual functions and components
-2. **E2E Tests** (27 tests) - Test user flows with Playwright
-
-## Commands
-
-### Run All Unit Tests
 ```bash
 npm test -- --run
 ```
 
-### Run Unit Tests with Coverage
+## Test Summary
+
+| Type | Count | Command |
+|------|-------|---------|
+| Unit Tests | 554 | `npm test -- --run` |
+| E2E Tests | 27 | `npm run test:e2e` |
+
+## Commands
+
+### Run All Tests (Non-Watch)
+```bash
+npm test -- --run
+```
+
+### Run with Coverage
 ```bash
 npm run test:coverage
 ```
 
-### Run E2E Tests
+### Run E2E Tests (Playwright)
 ```bash
 npm run test:e2e
 ```
 
 ### Run Specific Test File
 ```bash
-npm test -- --run tests/unit/lib/auth/index.test.ts
+npm test -- --run tests/unit/api/analyze.test.ts
 ```
 
-### Run Tests in Watch Mode (Development)
+### Run Tests Matching Pattern
+```bash
+npm test -- --run -t "webhook"
+```
+
+### Watch Mode (Development)
 ```bash
 npm test
 ```
 
-## Test Locations
+## Key Test Locations
 
-| Type | Location | Count |
+| Area | Location | Tests |
 |------|----------|-------|
-| Unit Tests | `tests/unit/` | 255 |
-| E2E Tests | `tests/e2e/` | 27 |
+| API Routes | `tests/unit/api/` | ~150 |
+| Components | `tests/unit/components/` | ~100 |
+| Libraries | `tests/unit/lib/` | ~200 |
+| Security | `tests/unit/security/` | ~20 |
+| E2E | `tests/e2e/` | 27 |
 
-## Key Test Files
+## Expected Output
 
-- `tests/unit/lib/auth/` - Authentication tests
-- `tests/unit/lib/ai/` - AI integration tests
-- `tests/unit/api/` - API route tests
-- `tests/unit/components/` - Component tests
-- `tests/unit/security/` - Security middleware tests
-- `tests/e2e/` - Playwright E2E tests
+All 554 tests should pass:
 
-## Adding New Tests
-
-1. Create test file next to the code or in `tests/unit/`
-2. Use Vitest for unit tests
-3. Use Playwright for E2E tests
-4. Follow existing patterns in the test files
+```
+Test Files  53 passed (53)
+     Tests  554 passed (554)
+  Duration  ~5s
+```

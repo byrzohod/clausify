@@ -1,55 +1,58 @@
-# /build - Build and Verify Production Ready
+# /build - Build and Verify
 
-Build the application and run all checks to ensure production readiness.
+Build the application and run all checks for production readiness.
 
-## Commands to Execute
+## Quick Build
 
 ```bash
-echo "🔍 Running pre-build checks..."
+npm run build
+```
 
-# Lint check
-echo ""
-echo "1/5 ESLint..."
-npm run lint || exit 1
+## Full Verification
 
-# Type check
-echo ""
-echo "2/5 TypeScript..."
-npm run typecheck || exit 1
+```bash
+echo "1/4 Lint..." && npm run lint
+echo "2/4 TypeScript..." && npm run typecheck
+echo "3/4 Tests..." && npm test -- --run
+echo "4/4 Build..." && npm run build
+echo "Done!"
+```
 
-# Unit tests
-echo ""
-echo "3/5 Unit Tests..."
-npm run test:unit || exit 1
+## Individual Steps
 
-# Integration tests
-echo ""
-echo "4/5 Integration Tests..."
-npm run test:integration || exit 1
+### Lint Check
+```bash
+npm run lint
+```
 
-# Build
-echo ""
-echo "5/5 Building..."
-npm run build || exit 1
+### TypeScript Check
+```bash
+npm run typecheck
+```
 
-echo ""
-echo "✅ All checks passed! Ready for deployment."
+### Tests
+```bash
+npm test -- --run
+```
+
+### Production Build
+```bash
+npm run build
 ```
 
 ## Build Output
 
-After successful build, check `.next/` directory for:
+After successful build, `.next/` contains:
 - Static pages (prerendered)
 - Server-side routes
 - API routes
-- Assets
+- Optimized assets
 
-## Deploy to Vercel
+## Common Build Errors
 
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-```
+| Error | Fix |
+|-------|-----|
+| Type errors | Run `npm run typecheck` to see details |
+| Lint errors | Run `npm run lint -- --fix` |
+| Test failures | Run `npm test` to see which tests fail |
+| Missing deps | Run `npm install` |

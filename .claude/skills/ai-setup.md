@@ -1,28 +1,30 @@
-# /ai-setup - Setup Local AI with Ollama
+# /ai-setup - Setup Local AI (Ollama)
 
-Setup and configure Ollama for local AI contract analysis.
+Configure Ollama for free local AI contract analysis.
 
-## Prerequisites
+## Install Ollama
 
-Install Ollama from: https://ollama.ai/download
+Download from: https://ollama.ai/download
 
-## Commands to Execute
+## Quick Setup
 
 ```bash
-# Start Ollama server (run in background or separate terminal)
-ollama serve &
+# Start server
+ollama serve
 
-# Wait for server to start
-sleep 2
-
-# Check available models
-ollama list
-
-# Pull recommended model for contract analysis
+# Pull model (in another terminal)
 ollama pull llama3.2
 
-# Verify it works
+# Verify
 curl http://localhost:11434/api/tags
+```
+
+## Configure App
+
+Set in `.env.local`:
+```
+AI_PROVIDER=ollama
+OLLAMA_MODEL=llama3.2
 ```
 
 ## Recommended Models
@@ -33,13 +35,19 @@ curl http://localhost:11434/api/tags
 | llama3.1 | 4GB | Better | Medium |
 | mistral | 4GB | Good | Fast |
 
-## Change Model
+## Switch to Cloud AI
 
-Edit `.env.local`:
-```bash
-OLLAMA_MODEL="llama3.2"  # or mistral, llama3.1, etc.
+For production or better quality, use Anthropic:
+
+```
+AI_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## Test Analysis
+## Troubleshooting
 
-With the dev server running, upload a contract to test the AI analysis.
+| Issue | Fix |
+|-------|-----|
+| "Connection refused" | Start Ollama: `ollama serve` |
+| Slow responses | Use smaller model: `llama3.2` |
+| Out of memory | Close other apps, use smaller model |
