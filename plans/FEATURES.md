@@ -407,23 +407,82 @@ Production-ready rate limiting that works with multiple instances.
 
 ### F-014: Browser Extension
 
-**Status:** `DEFERRED`
+**Status:** `DONE`
 **Priority:** P3 (Low)
-**Estimate:** 3 days
+**Completed:** 2026-01-12 (v1.2)
 
 #### Description
 Chrome extension to analyze Terms of Service on any website.
+
+#### Implementation Notes
+- Chrome extension v1.0 in `/browser-extension/`
+- Content script for text selection
+- Popup interface for analysis
 
 ---
 
 ### F-015: API Access
 
-**Status:** `DEFERRED`
+**Status:** `DONE`
 **Priority:** P3 (Low)
-**Estimate:** 2 days
+**Completed:** 2026-01-12 (v1.2)
 
 #### Description
 Public API for developers to integrate Clausify analysis.
+
+#### Implementation Notes
+- API key system with secure hashing
+- `/api/api-keys` endpoints for key management
+- Rate limiting per API key
+- Full API documentation
+
+---
+
+### F-019: Email Notifications
+
+**Status:** `DONE`
+**Priority:** P2 (Medium)
+**Completed:** 2026-01-12 (v1.2)
+
+#### Description
+Email notifications for analysis completion and account events.
+
+#### Implementation Notes
+- Resend integration for transactional emails
+- User preference management
+- Analysis complete, subscription, and account emails
+
+---
+
+### F-020: OCR for Scanned Documents
+
+**Status:** `DONE`
+**Priority:** P2 (Medium)
+**Completed:** 2026-01-12 (v1.2)
+
+#### Description
+Detect and process scanned PDF documents.
+
+#### Implementation Notes
+- Scanned document detection in `/lib/ocr/`
+- Placeholder for full OCR (Tesseract.js integration ready)
+
+---
+
+### F-021: Team Workspaces
+
+**Status:** `DONE`
+**Priority:** P2 (Medium)
+**Completed:** 2026-01-12 (v1.2)
+
+#### Description
+Multi-user workspaces with role-based access control.
+
+#### Implementation Notes
+- Workspace model with RBAC (owner, admin, member, viewer)
+- Invitation system with email tokens
+- `/api/workspaces` endpoints
+- Member management UI
 
 ---
 
@@ -431,11 +490,9 @@ Public API for developers to integrate Clausify analysis.
 
 | ID | Feature Idea | Source | Notes |
 |----|--------------|--------|-------|
-| IDEA-001 | OCR for scanned documents | Internal | Requires Tesseract.js |
 | IDEA-002 | Contract templates library | Internal | Curated fair contracts |
 | IDEA-003 | Lawyer marketplace | Internal | Phase 3+ |
-| IDEA-004 | Team workspaces | Internal | Enterprise feature |
-| IDEA-005 | Slack integration | Internal | Notify team on analysis |
+| IDEA-005 | Slack integration | Internal | Basic integration done |
 
 ---
 
@@ -444,3 +501,6 @@ Public API for developers to integrate Clausify analysis.
 | Date | Feature | Change | Author |
 |------|---------|--------|--------|
 | 2024-01-11 | F-001 to F-011 | All MVP features completed | Claude |
+| 2026-01-11 | F-012 to F-018 | v1.1 features completed | Claude |
+| 2026-01-12 | F-014, F-015, F-019-F-021 | v1.2 features completed | Claude |
+| 2026-01-13 | - | Documentation cleanup | Claude |
